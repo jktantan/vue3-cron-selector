@@ -21,7 +21,7 @@
         ref="panelRef"
         class="cron-popover__panel"
         :style="panelStyle"
-        @mousedown.stop
+        @mousedown.prevent
       >
         <slot />
       </div>
