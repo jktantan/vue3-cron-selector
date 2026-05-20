@@ -1,0 +1,81 @@
+{
+  "name": "vue3-cron-selector",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "license": "MIT",
+  "description": "A visual cron expression selector component for Vue 3 with inline and panel modes",
+  "keywords": [
+    "vue3",
+    "cron",
+    "cron-expression",
+    "crontab",
+    "quartz",
+    "scheduler",
+    "component"
+  ],
+  "main": "./dist/vue3-cron-selector.umd.cjs",
+  "module": "./dist/vue3-cron-selector.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/vue3-cron-selector.js",
+      "require": "./dist/vue3-cron-selector.umd.cjs"
+    },
+    "./style.css": "./dist/vue3-cron-selector.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "build:lib": "vue-tsc -p tsconfig.app.json --noEmit && vite build --mode lib",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write \"src/**/*.{ts,vue,scss}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,vue,scss}\""
+  },
+  "peerDependencies": {
+    "vue": ">=3.3.0"
+  },
+  "dependencies": {
+    "croner": "^10.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.12.3",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/test-utils": "^2.4.10",
+    "@vue/tsconfig": "^0.9.1",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-vue": "^10.9.1",
+    "globals": "^17.6.0",
+    "happy-dom": "^20.9.0",
+    "prettier": "^3.8.3",
+    "sass-embedded": "^1.99.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.59.3",
+    "vite": "^8.0.12",
+    "vite-plugin-dts": "^5.0.0",
+    "vitest": "^4.1.6",
+    "vue": "^3.5.34",
+    "vue-tsc": "^3.2.8"
+  }
+}

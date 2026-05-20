@@ -1,0 +1,43 @@
+:root {
+  --cron-color-primary: #4f46e5;
+  --cron-color-primary-hover: #4338ca;
+  --cron-color-primary-light: #eef2ff;
+  --cron-color-text: #1f2937;
+  --cron-color-text-secondary: #6b7280;
+  --cron-color-border: #d1d5db;
+  --cron-color-border-focus: #4f46e5;
+  --cron-color-bg: #ffffff;
+  --cron-color-bg-hover: #f9fafb;
+  --cron-color-bg-selected: #eef2ff;
+  --cron-color-error: #dc2626;
+  --cron-color-error-light: #fef2f2;
+
+  --cron-font-family: system-ui, -apple-system, sans-serif;
+  --cron-font-size-sm: 0.75rem;
+  --cron-font-size-base: 0.875rem;
+  --cron-font-size-lg: 1rem;
+  --cron-line-height: 1.5;
+
+  --cron-spacing-xs: 0.25rem;
+  --cron-spacing-sm: 0.5rem;
+  --cron-spacing-md: 0.75rem;
+  --cron-spacing-lg: 1rem;
+  --cron-spacing-xl: 1.5rem;
+
+  --cron-border-radius: 0.375rem;
+  --cron-border-radius-lg: 0.5rem;
+  --cron-border-width: 1px;
+
+  --cron-transition-duration: 150ms;
+  --cron-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --cron-panel-max-height: 500px;
+  --cron-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --cron-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --cron-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  --cron-tab-height: 2.5rem;
+  --cron-popover-max-width: 680px;
+  --cron-popover-z-index: 1000;
+  --cron-body-min-height: 280px;
+}
