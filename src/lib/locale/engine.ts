@@ -131,7 +131,9 @@ export function generateDescription(parsed: ParsedCron, locale: LocaleDefinition
     if (hour.type === 'value' && minute.type === 'value') {
       parts.push(`${locale.ui.at} ${hourLabel}:${minuteLabel}`)
     } else {
-      parts.push(`${locale.ui.at} ${hourLabel}:${minuteLabel}`)
+      parts.push(
+        `${locale.ui.at} ${locale.fieldLabels.hour} ${hourLabel}, ${locale.fieldLabels.minute} ${minuteLabel}`,
+      )
     }
   } else if (hour && hour.type !== 'any') {
     parts.push(

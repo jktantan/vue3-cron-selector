@@ -37,19 +37,16 @@ function dedupSort(values: ReadonlyArray<number>): ReadonlyArray<number> {
 
 export function createAnySegment(field: FieldDefinition): AnySegment {
   let cached: ReadonlyArray<number> | null = null
-  function lazyValues(): ReadonlyArray<number> {
-    if (!cached) {
-      cached = expandRange(field.min, field.max)
-    }
-    return cached
-  }
-  const segment = Object.create(null) as AnySegment
-  Object.defineProperties(segment, {
-    type: { value: 'any' as const, enumerable: true },
-    values: { get: lazyValues, enumerable: true },
-    toString: { value: () => '*', enumerable: true },
+  return Object.freeze({
+    type: 'any' as const,
+    get values(): ReadonlyArray<number> {
+      if (!cached) {
+        cached = expandRange(field.min, field.max)
+      }
+      return cached
+    },
+    toString: () => '*',
   })
-  return Object.freeze(segment)
 }
 
 export function createValueSegment(value: number, field: FieldDefinition): ValueSegment {
@@ -64,7 +61,11 @@ export function createValueSegment(value: number, field: FieldDefinition): Value
   })
 }
 
-export function createRangeSegment(from: number, to: number, field: FieldDefinition): RangeSegment {
+export function createRangeSegment(
+  from: number,
+  to: number,
+  field: FieldDefinition,
+): RangeSegment | ValueSegment {
   if (from < field.min || to > field.max) {
     throw new Error(
       `Range ${from}-${to} out of bounds [${field.min}-${field.max}] for field ${field.id}`,
@@ -72,6 +73,9 @@ export function createRangeSegment(from: number, to: number, field: FieldDefinit
   }
   if (from > to) {
     throw new Error(`Invalid range: ${from} > ${to} for field ${field.id}`)
+  }
+  if (from === to) {
+    return createValueSegment(from, field)
   }
   const values = expandRange(from, to)
   return Object.freeze({

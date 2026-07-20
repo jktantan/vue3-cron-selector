@@ -57,14 +57,14 @@ export function parseCronField(fieldStr: string, field: FieldDefinition): Segmen
   }
 
   if (field.id === 'dayOfWeek') {
-    const lastWdOfMonth = trimmed.match(/^(\d+)L$/)
+    const lastWdOfMonth = trimmed.match(/^([A-Za-z]+|\d+)L$/)
     if (lastWdOfMonth) {
-      const weekday = parseInt(lastWdOfMonth[1], 10)
+      const weekday = resolveValue(lastWdOfMonth[1], field)
       return createLastWeekdayOfMonthSegment(weekday)
     }
-    const nthWd = trimmed.match(/^(\d+)#(\d+)$/)
+    const nthWd = trimmed.match(/^([A-Za-z]+|\d+)#(\d+)$/)
     if (nthWd) {
-      const weekday = parseInt(nthWd[1], 10)
+      const weekday = resolveValue(nthWd[1], field)
       const nth = parseInt(nthWd[2], 10)
       if (nth < 1 || nth > 5) throw new Error(`Nth value ${nth} out of range [1-5]`)
       return createNthWeekdaySegment(weekday, nth)
@@ -72,7 +72,13 @@ export function parseCronField(fieldStr: string, field: FieldDefinition): Segmen
   }
 
   if (trimmed.includes(',')) {
-    const parts = trimmed.split(',').map((part) => parseCronField(part.trim(), field))
+    const rawParts = trimmed.split(',')
+    for (const rp of rawParts) {
+      if (rp.trim() === '') {
+        throw new Error(`Empty segment in comma-separated value "${trimmed}" for field ${field.id}`)
+      }
+    }
+    const parts = rawParts.map((part) => parseCronField(part.trim(), field))
     if (parts.length === 1) {
       return parts[0]
     }
@@ -80,7 +86,11 @@ export function parseCronField(fieldStr: string, field: FieldDefinition): Segmen
   }
 
   if (trimmed.includes('/')) {
-    const [baseStr, stepStr] = trimmed.split('/')
+    const slashParts = trimmed.split('/')
+    if (slashParts.length !== 2) {
+      throw new Error(`Invalid step expression "${trimmed}" for field ${field.id}`)
+    }
+    const [baseStr, stepStr] = slashParts
     const step = parseInt(stepStr, 10)
     if (isNaN(step) || step < 1) {
       throw new Error(`Invalid step value "${stepStr}" for field ${field.id}`)
@@ -91,9 +101,12 @@ export function parseCronField(fieldStr: string, field: FieldDefinition): Segmen
     }
 
     if (baseStr.includes('-')) {
-      const [fromStr, toStr] = baseStr.split('-')
-      const from = resolveValue(fromStr, field)
-      const to = resolveValue(toStr, field)
+      const dashParts = baseStr.split('-')
+      if (dashParts.length !== 2) {
+        throw new Error(`Invalid range "${baseStr}" in step expression for field ${field.id}`)
+      }
+      const from = resolveValue(dashParts[0], field)
+      const to = resolveValue(dashParts[1], field)
       return createStepSegment(from, step, field, to)
     }
 
@@ -102,9 +115,12 @@ export function parseCronField(fieldStr: string, field: FieldDefinition): Segmen
   }
 
   if (trimmed.includes('-')) {
-    const [fromStr, toStr] = trimmed.split('-')
-    const from = resolveValue(fromStr, field)
-    const to = resolveValue(toStr, field)
+    const dashParts = trimmed.split('-')
+    if (dashParts.length !== 2) {
+      throw new Error(`Invalid range expression "${trimmed}" for field ${field.id}`)
+    }
+    const from = resolveValue(dashParts[0], field)
+    const to = resolveValue(dashParts[1], field)
     return createRangeSegment(from, to, field)
   }
 

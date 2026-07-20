@@ -79,6 +79,7 @@ export const YEAR_FIELD: FieldDefinition = Object.freeze({
 export class FieldWrapper {
   readonly definition: FieldDefinition
   private readonly labelFn: ((value: number) => string) | null
+  private _items: ReadonlyArray<FieldItem> | null = null
 
   constructor(definition: FieldDefinition, labelFn?: (value: number) => string) {
     this.definition = definition
@@ -98,14 +99,17 @@ export class FieldWrapper {
   }
 
   get items(): ReadonlyArray<FieldItem> {
-    const result: FieldItem[] = []
-    for (let i = this.definition.min; i <= this.definition.max; i++) {
-      result.push({
-        value: i,
-        label: this.labelFn ? this.labelFn(i) : String(i).padStart(2, '0'),
-      })
+    if (!this._items) {
+      const result: FieldItem[] = []
+      for (let i = this.definition.min; i <= this.definition.max; i++) {
+        result.push({
+          value: i,
+          label: this.labelFn ? this.labelFn(i) : String(i).padStart(2, '0'),
+        })
+      }
+      this._items = result
     }
-    return result
+    return this._items
   }
 
   contains(value: number): boolean {

@@ -22,8 +22,8 @@ export function calcPlacement(input: PlacementInput): PlacementResult {
     panelWidth,
     panelHeight,
     gap = DEFAULT_GAP,
-    viewportWidth = window.innerWidth,
-    viewportHeight = window.innerHeight,
+    viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1920,
+    viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 1080,
   } = input
 
   const spaceBelow = viewportHeight - anchorRect.bottom - gap

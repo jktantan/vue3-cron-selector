@@ -4,6 +4,7 @@ import {
   computed,
   watch,
   triggerRef,
+  isRef,
   type Ref,
   type ComputedRef,
   type WatchStopHandle,
@@ -36,9 +37,7 @@ export interface UseCronReturn {
 }
 
 function wrapRef<T>(value: Ref<T> | T): Ref<T> {
-  return typeof value === 'object' && value !== null && 'value' in value
-    ? (value as Ref<T>)
-    : (ref(value) as Ref<T>)
+  return isRef(value) ? value : (ref(value) as Ref<T>)
 }
 
 export function useCron(options?: UseCronOptions): UseCronReturn {
@@ -154,17 +153,15 @@ export function useCron(options?: UseCronOptions): UseCronReturn {
     cronString.value = config.defaultExpression
   })
 
-  const error = computed<string | null>(() => {
-    const parsed = parseCronExpression(cronString.value, formatRef.value)
-    return parsed.error
-  })
+  const parsed = computed(() => parseCronExpression(cronString.value, formatRef.value))
+
+  const error = computed<string | null>(() => parsed.value.error)
 
   const isValid = computed(() => error.value === null)
 
   const description = computed(() => {
     if (!isValid.value) return ''
-    const parsed = parseCronExpression(cronString.value, formatRef.value)
-    return generateDescription(parsed, resolvedLocale.value)
+    return generateDescription(parsed.value, resolvedLocale.value)
   })
 
   const nextExecutions = computed<ReadonlyArray<Date>>(() => {
