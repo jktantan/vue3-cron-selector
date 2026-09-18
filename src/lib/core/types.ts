@@ -105,11 +105,6 @@ export interface FieldDefinition {
 
 export type PeriodId = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year'
 
-export interface Period {
-  readonly id: PeriodId
-  readonly label: string
-}
-
 export interface FormatConfig {
   readonly format: CronFormat
   readonly fieldOrder: ReadonlyArray<string>

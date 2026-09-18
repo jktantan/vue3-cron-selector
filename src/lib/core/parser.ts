@@ -19,10 +19,10 @@ function resolveValue(token: string, field: FieldDefinition): number {
   if (field.altValues?.has(upper)) {
     return field.altValues.get(upper)!
   }
-  const num = parseInt(token, 10)
-  if (isNaN(num)) {
+  if (!/^\d+$/.test(upper)) {
     throw new Error(`Invalid value "${token}" for field ${field.id}`)
   }
+  const num = Number(upper)
   if (num < field.min || num > field.max) {
     throw new Error(`Value ${num} out of range [${field.min}-${field.max}] for field ${field.id}`)
   }
@@ -47,10 +47,16 @@ export function parseCronField(fieldStr: string, field: FieldDefinition): Segmen
     if (trimmed === 'L') return createLastDaySegment(0)
     if (trimmed === 'LW') return createLastWeekdaySegment()
     const lastDayOffset = trimmed.match(/^L-(\d+)$/)
-    if (lastDayOffset) return createLastDaySegment(parseInt(lastDayOffset[1], 10))
+    if (lastDayOffset) {
+      const offset = Number(lastDayOffset[1])
+      if (offset < 1 || offset > 30) {
+        throw new Error(`Last day offset ${offset} out of range [1-30]`)
+      }
+      return createLastDaySegment(offset)
+    }
     const nearestWd = trimmed.match(/^(\d+)W$/)
     if (nearestWd) {
-      const day = parseInt(nearestWd[1], 10)
+      const day = Number(nearestWd[1])
       if (day < 1 || day > 31) throw new Error(`Nearest weekday day ${day} out of range [1-31]`)
       return createNearestWeekdaySegment(day)
     }
@@ -65,7 +71,7 @@ export function parseCronField(fieldStr: string, field: FieldDefinition): Segmen
     const nthWd = trimmed.match(/^([A-Za-z]+|\d+)#(\d+)$/)
     if (nthWd) {
       const weekday = resolveValue(nthWd[1], field)
-      const nth = parseInt(nthWd[2], 10)
+      const nth = Number(nthWd[2])
       if (nth < 1 || nth > 5) throw new Error(`Nth value ${nth} out of range [1-5]`)
       return createNthWeekdaySegment(weekday, nth)
     }
@@ -91,8 +97,11 @@ export function parseCronField(fieldStr: string, field: FieldDefinition): Segmen
       throw new Error(`Invalid step expression "${trimmed}" for field ${field.id}`)
     }
     const [baseStr, stepStr] = slashParts
-    const step = parseInt(stepStr, 10)
-    if (isNaN(step) || step < 1) {
+    if (!/^\d+$/.test(stepStr)) {
+      throw new Error(`Invalid step value "${stepStr}" for field ${field.id}`)
+    }
+    const step = Number(stepStr)
+    if (step < 1) {
       throw new Error(`Invalid step value "${stepStr}" for field ${field.id}`)
     }
 

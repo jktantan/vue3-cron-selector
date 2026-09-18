@@ -107,6 +107,9 @@ export function createStepSegment(
       `Step range end ${rangeEnd} out of range [${field.min}-${field.max}] for field ${field.id}`,
     )
   }
+  if (rangeEnd !== undefined && base !== '*' && rangeEnd < base) {
+    throw new Error(`Invalid step range: ${base} > ${rangeEnd} for field ${field.id}`)
+  }
   const max = rangeEnd ?? field.max
   const values = expandStep(numericBase, step, field.min, max)
   return Object.freeze({

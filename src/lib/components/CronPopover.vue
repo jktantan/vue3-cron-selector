@@ -57,7 +57,7 @@ const panelRef = ref<HTMLElement | null>(null)
 const isOpen = ref(false)
 const showError = ref(false)
 
-const panelPosition = ref({ top: 0, left: 0, width: 0, flipUp: false })
+const panelPosition = ref({ top: 0, left: 0, width: 0 })
 
 const panelStyle = computed(() => ({
   position: 'fixed' as const,
@@ -80,7 +80,6 @@ function updatePosition(): void {
     top: placement.top,
     left: placement.left,
     width: minWidth,
-    flipUp: placement.flipUp,
   }
 }
 

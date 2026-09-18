@@ -95,6 +95,10 @@ describe('createStepSegment', () => {
   it('throws for out-of-range base', () => {
     expect(() => createStepSegment(60, 5, MINUTE_FIELD)).toThrow('out of range')
   })
+
+  it('throws when a step range ends before its base', () => {
+    expect(() => createStepSegment(20, 5, MINUTE_FIELD, 10)).toThrow('Invalid step range')
+  })
 })
 
 describe('createCombinedSegment', () => {

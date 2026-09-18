@@ -5,7 +5,7 @@ import {
   selectedToSegment,
   segmentsToString,
 } from '../lib/core/parser'
-import { MINUTE_FIELD, MONTH_FIELD, DAY_OF_WEEK_FIELD } from '../lib/core/fields'
+import { MINUTE_FIELD, MONTH_FIELD, DAY_OF_MONTH_FIELD, DAY_OF_WEEK_FIELD } from '../lib/core/fields'
 import type { Segment } from '../lib/core/types'
 
 describe('parseCronField', () => {
@@ -88,6 +88,16 @@ describe('parseCronField', () => {
 
   it('throws on invalid value', () => {
     expect(() => parseCronField('abc', MINUTE_FIELD)).toThrow('Invalid value')
+  })
+
+  it('rejects partially numeric values instead of silently truncating them', () => {
+    expect(() => parseCronField('5oops', MINUTE_FIELD)).toThrow('Invalid value')
+    expect(() => parseCronField('*/5oops', MINUTE_FIELD)).toThrow('Invalid step value')
+  })
+
+  it('rejects invalid day modifiers and descending step ranges', () => {
+    expect(() => parseCronField('L-31', DAY_OF_MONTH_FIELD)).toThrow('Last day offset 31 out of range')
+    expect(() => parseCronField('20-10/2', MINUTE_FIELD)).toThrow('Invalid step range')
   })
 
   it('throws on out-of-range value', () => {
