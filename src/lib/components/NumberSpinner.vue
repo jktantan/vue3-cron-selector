@@ -83,13 +83,13 @@ function onBlur(event: FocusEvent): void {
   const raw = (event.target as HTMLInputElement).value.trim()
   const parsed = parseInt(raw, 10)
   if (isNaN(parsed)) {
-    (event.target as HTMLInputElement).value = String(props.modelValue)
+    ;(event.target as HTMLInputElement).value = String(props.modelValue)
     return
   }
   const clamped = clamp(parsed)
   if (clamped !== props.modelValue) {
     emit('update:modelValue', clamped)
   }
-  (event.target as HTMLInputElement).value = String(clamped)
+  ;(event.target as HTMLInputElement).value = String(clamped)
 }
 </script>

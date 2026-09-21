@@ -85,6 +85,7 @@ const props = withDefaults(
   {
     disabled: false,
     previewCount: 5,
+    cols: () => ({}),
   },
 )
 
@@ -112,7 +113,8 @@ const visibleTabs = computed<ReadonlyArray<string>>(() => {
 
 const mergedLocale = computed<LocaleDefinition>(() => {
   if (!hasMergedDayTab.value) return props.locale
-  const dayLabel = props.locale.tabLabels?.dayOfMonth ?? props.locale.fieldLabels.dayOfMonth ?? 'Day'
+  const dayLabel =
+    props.locale.tabLabels?.dayOfMonth ?? props.locale.fieldLabels.dayOfMonth ?? 'Day'
   return {
     ...props.locale,
     tabLabels: {

@@ -41,7 +41,7 @@ function tabLabel(fieldId: string): string {
 }
 
 function onKeydown(event: KeyboardEvent, index: number): void {
-  let nextIndex = index
+  let nextIndex: number
   if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
     event.preventDefault()
     nextIndex = (index + 1) % props.fields.length

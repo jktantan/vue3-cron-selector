@@ -7,7 +7,7 @@ A visual cron expression selector component for Vue 3. Supports 5-field crontab,
 ## Features
 
 - Two display modes: always-visible inline panel and input-triggered popover
-- Supports `crontab` (5-field), `quartz` (7-field with year), and `spring` (6-field) formats
+- Supports `crontab` (5-field), `quartz` (6-field with optional year), and `spring` (6-field) formats
 - Built-in English and Chinese locales, extensible with custom locale definitions
 - Next execution time preview powered by [croner](https://github.com/hexagon/croner)
 - Fully typed with TypeScript declarations
@@ -202,6 +202,7 @@ const {
   modelValue: '*/5 * * * *',  // string or Ref<string>
   format: 'crontab',          // CronFormat or Ref<CronFormat>
   locale: 'en',               // string, LocaleDefinition, or Ref
+  previewCount: 5,            // number or Ref<number>
 })
 ```
 
@@ -324,7 +325,7 @@ interface LocaleDefinition {
 | Function | Signature | Description |
 |----------|-----------|-------------|
 | `parseCronExpression` | `(expression, format) => ParsedCron` | Parse a full cron expression |
-| `parseCronField` | `(fieldStr, field) => Segment` | Parse a single field string |
+| `parseCronField` | `(fieldStr, field, format?) => Segment` | Parse a single field string |
 | `selectedToSegment` | `(values, field) => Segment` | Convert selected values to optimal segment |
 | `segmentsToString` | `(segments, format) => string` | Serialize segments to expression |
 | `getFormatConfig` | `(format) => FormatConfig` | Get field definitions for a format |

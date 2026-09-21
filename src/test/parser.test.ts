@@ -5,7 +5,12 @@ import {
   selectedToSegment,
   segmentsToString,
 } from '../lib/core/parser'
-import { MINUTE_FIELD, MONTH_FIELD, DAY_OF_MONTH_FIELD, DAY_OF_WEEK_FIELD } from '../lib/core/fields'
+import {
+  MINUTE_FIELD,
+  MONTH_FIELD,
+  DAY_OF_MONTH_FIELD,
+  DAY_OF_WEEK_FIELD,
+} from '../lib/core/fields'
 import type { Segment } from '../lib/core/types'
 
 describe('parseCronField', () => {
@@ -96,8 +101,16 @@ describe('parseCronField', () => {
   })
 
   it('rejects invalid day modifiers and descending step ranges', () => {
-    expect(() => parseCronField('L-31', DAY_OF_MONTH_FIELD)).toThrow('Last day offset 31 out of range')
+    expect(() => parseCronField('L-31', DAY_OF_MONTH_FIELD)).toThrow(
+      'Last day offset 31 out of range',
+    )
     expect(() => parseCronField('20-10/2', MINUTE_FIELD)).toThrow('Invalid step range')
+  })
+
+  it('rejects Quartz-only day syntax in crontab expressions', () => {
+    for (const expression of ['* * ? * *', '* * L * *', '* * * * MON#2']) {
+      expect(parseCronExpression(expression, 'crontab').error).not.toBeNull()
+    }
   })
 
   it('throws on out-of-range value', () => {
@@ -122,6 +135,12 @@ describe('parseCronExpression', () => {
     expect(result.segments.has('second')).toBe(true)
     expect(result.segments.has('year')).toBe(true)
     expect(result.segments.get('year')!.type).toBe('any')
+  })
+
+  it('requires exactly one Quartz day field to be no-specific', () => {
+    expect(parseCronExpression('0 0 0 ? * ?', 'quartz').error).toContain('exactly one')
+    expect(parseCronExpression('0 0 0 * * *', 'quartz').error).toContain('exactly one')
+    expect(parseCronExpression('0 0 0 ? * MON', 'quartz').error).toBeNull()
   })
 
   it('returns error for wrong field count', () => {

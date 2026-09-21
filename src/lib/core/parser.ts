@@ -29,7 +29,11 @@ function resolveValue(token: string, field: FieldDefinition): number {
   return num
 }
 
-export function parseCronField(fieldStr: string, field: FieldDefinition): Segment {
+export function parseCronField(
+  fieldStr: string,
+  field: FieldDefinition,
+  format?: CronFormat,
+): Segment {
   const trimmed = fieldStr.trim()
 
   if (trimmed === '*') {
@@ -37,6 +41,9 @@ export function parseCronField(fieldStr: string, field: FieldDefinition): Segmen
   }
 
   if (trimmed === '?') {
+    if (format === 'crontab') {
+      throw new Error(`"?" is not supported by ${format} format`)
+    }
     if (field.id !== 'dayOfMonth' && field.id !== 'dayOfWeek') {
       throw new Error(`"?" is only valid for dayOfMonth and dayOfWeek fields, not ${field.id}`)
     }
@@ -44,6 +51,9 @@ export function parseCronField(fieldStr: string, field: FieldDefinition): Segmen
   }
 
   if (field.id === 'dayOfMonth') {
+    if (format === 'crontab' && /^(L|LW|L-\d+|\d+W)$/.test(trimmed)) {
+      throw new Error(`Day modifiers are not supported by ${format} format`)
+    }
     if (trimmed === 'L') return createLastDaySegment(0)
     if (trimmed === 'LW') return createLastWeekdaySegment()
     const lastDayOffset = trimmed.match(/^L-(\d+)$/)
@@ -63,6 +73,9 @@ export function parseCronField(fieldStr: string, field: FieldDefinition): Segmen
   }
 
   if (field.id === 'dayOfWeek') {
+    if (format === 'crontab' && /^([A-Za-z]+|\d+)(L|#\d+)$/.test(trimmed)) {
+      throw new Error(`Day modifiers are not supported by ${format} format`)
+    }
     const lastWdOfMonth = trimmed.match(/^([A-Za-z]+|\d+)L$/)
     if (lastWdOfMonth) {
       const weekday = resolveValue(lastWdOfMonth[1], field)
@@ -84,7 +97,7 @@ export function parseCronField(fieldStr: string, field: FieldDefinition): Segmen
         throw new Error(`Empty segment in comma-separated value "${trimmed}" for field ${field.id}`)
       }
     }
-    const parts = rawParts.map((part) => parseCronField(part.trim(), field))
+    const parts = rawParts.map((part) => parseCronField(part.trim(), field, format))
     if (parts.length === 1) {
       return parts[0]
     }
@@ -163,7 +176,7 @@ export function parseCronExpression(expression: string, format: CronFormat): Par
       const fieldId = config.fieldOrder[i]
       const field = config.fields.get(fieldId)!
       if (i < parts.length) {
-        segments.set(fieldId, parseCronField(parts[i], field))
+        segments.set(fieldId, parseCronField(parts[i], field, format))
       } else {
         segments.set(fieldId, createAnySegment(field))
       }
@@ -174,6 +187,21 @@ export function parseCronExpression(expression: string, format: CronFormat): Par
       segments: new Map(),
       raw: expression,
       error: err instanceof Error ? err.message : String(err),
+    }
+  }
+
+  if (format === 'quartz') {
+    const dayOfMonth = segments.get('dayOfMonth')
+    const dayOfWeek = segments.get('dayOfWeek')
+    const noSpecificCount =
+      Number(dayOfMonth?.type === 'noSpecific') + Number(dayOfWeek?.type === 'noSpecific')
+    if (noSpecificCount !== 1) {
+      return {
+        format,
+        segments: new Map(),
+        raw: expression,
+        error: 'Quartz format requires exactly one of dayOfMonth or dayOfWeek to be "?"',
+      }
     }
   }
 

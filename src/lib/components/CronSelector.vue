@@ -59,9 +59,11 @@ const props = withDefaults(
     mode?: DisplayMode
   }>(),
   {
+    modelValue: '',
     format: 'crontab',
     locale: 'en',
     disabled: false,
+    cols: () => ({}),
     previewCount: 5,
     mode: 'inline',
   },
@@ -76,6 +78,7 @@ const emit = defineEmits<{
 const cronRef = ref(props.modelValue ?? '')
 const formatRef = ref(props.format)
 const localeRefValue = ref<string | LocaleDefinition>(props.locale)
+const previewCountRef = ref(props.previewCount)
 
 watch(
   () => props.format,
@@ -89,11 +92,18 @@ watch(
     localeRefValue.value = v
   },
 )
+watch(
+  () => props.previewCount,
+  (v) => {
+    previewCountRef.value = v
+  },
+)
 
 const { cronString, segments, formatConfig, nextExecutions, isValid, error } = useCron({
   modelValue: cronRef,
   format: formatRef,
   locale: localeRefValue,
+  previewCount: previewCountRef,
 })
 
 const resolvedLocale = computed<LocaleDefinition>(() => {
@@ -106,7 +116,6 @@ watch(
   (newVal) => {
     if (newVal !== undefined && newVal !== cronString.value) {
       cronRef.value = newVal
-      cronString.value = newVal
     }
   },
 )

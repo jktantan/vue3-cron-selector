@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import { useCron } from '../lib/composables/useCron'
 
 describe('useCron', () => {
@@ -20,6 +20,19 @@ describe('useCron', () => {
     const mv = ref('0 12 * * *')
     const result = useCron({ modelValue: mv })
     expect(result.cronString.value).toBe('0 12 * * *')
+  })
+
+  it('synchronizes changes with a provided modelValue ref', async () => {
+    const mv = ref('0 12 * * *')
+    const result = useCron({ modelValue: mv })
+
+    mv.value = '15 8 * * *'
+    await nextTick()
+    expect(result.cronString.value).toBe('15 8 * * *')
+
+    result.setCronString('30 9 * * *')
+    await nextTick()
+    expect(mv.value).toBe('30 9 * * *')
   })
 
   it('returns correct formatConfig for crontab', () => {
@@ -89,6 +102,26 @@ describe('useCron', () => {
     for (const date of result.nextExecutions.value) {
       expect(date).toBeInstanceOf(Date)
     }
+  })
+
+  it('honors previewCount', () => {
+    const result = useCron({ modelValue: '* * * * *', previewCount: 7 })
+    expect(result.nextExecutions.value).toHaveLength(7)
+  })
+
+  it('keeps Quartz year constraints in execution previews', () => {
+    const result = useCron({ modelValue: '0 0 0 ? * * 2099', format: 'quartz' })
+    expect(result.nextExecutions.value[0]?.getFullYear()).toBe(2099)
+  })
+
+  it('preserves the expression when its format changes', async () => {
+    const format = ref<'crontab' | 'quartz'>('crontab')
+    const result = useCron({ modelValue: '0 12 * * *', format })
+
+    format.value = 'quartz'
+    await nextTick()
+    expect(result.cronString.value).toBe('0 12 * * *')
+    expect(result.isValid.value).toBe(false)
   })
 
   it('returns empty executions for invalid expression', () => {

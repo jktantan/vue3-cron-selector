@@ -21,6 +21,7 @@ export interface UseCronOptions {
   modelValue?: Ref<string> | string
   format?: Ref<CronFormat> | CronFormat
   locale?: Ref<string | LocaleDefinition> | string | LocaleDefinition
+  previewCount?: Ref<number> | number
 }
 
 export interface UseCronReturn {
@@ -43,6 +44,9 @@ function wrapRef<T>(value: Ref<T> | T): Ref<T> {
 export function useCron(options?: UseCronOptions): UseCronReturn {
   const formatRef = wrapRef(options?.format ?? 'crontab')
   const localeRef = wrapRef(options?.locale ?? 'en')
+  const previewCountRef = wrapRef(options?.previewCount ?? 5)
+  const modelValueRef =
+    options?.modelValue && isRef(options.modelValue) ? options.modelValue : undefined
 
   const formatConfig = computed(() => getFormatConfig(formatRef.value))
   const resolvedLocale = computed<LocaleDefinition>(() => {
@@ -147,10 +151,25 @@ export function useCron(options?: UseCronOptions): UseCronReturn {
     }
   })
 
+  if (modelValueRef) {
+    watch(modelValueRef, (newValue) => {
+      if (newValue !== cronString.value) {
+        cronString.value = newValue || getFormatConfig(formatRef.value).defaultExpression
+      }
+    })
+
+    watch(cronString, (newValue) => {
+      if (newValue !== modelValueRef.value) {
+        modelValueRef.value = newValue
+      }
+    })
+  }
+
   watch(formatRef, (newFormat) => {
     const config = getFormatConfig(newFormat)
-    buildSegments(config, config.defaultExpression)
-    cronString.value = config.defaultExpression
+    // Keep the caller's expression intact. A format change can be lossy (for
+    // example, crontab has no seconds), so users must explicitly reset or edit it.
+    buildSegments(config, cronString.value)
   })
 
   const parsed = computed(() => parseCronExpression(cronString.value, formatRef.value))
@@ -167,19 +186,12 @@ export function useCron(options?: UseCronOptions): UseCronReturn {
   const nextExecutions = computed<ReadonlyArray<Date>>(() => {
     if (!isValid.value) return []
     try {
-      let expr = cronString.value
-      if (formatRef.value === 'quartz') {
-        const parts = expr.trim().split(/\s+/)
-        if (parts.length === 7) {
-          expr = parts.slice(0, 6).join(' ')
-        }
-        expr = expr.replace(/\?/g, '*')
-      }
-      const job = new Cron(expr)
+      const job = new Cron(cronString.value)
       const runs: Date[] = []
       let next = job.nextRun()
       let count = 0
-      while (next && count < 5) {
+      const maxCount = Math.max(0, Math.floor(previewCountRef.value))
+      while (next && count < maxCount) {
         runs.push(next)
         next = job.nextRun(new Date(next.getTime() + 1000))
         count++

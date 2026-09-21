@@ -29,9 +29,7 @@
           @change="selectOption('dayStep')"
         />
         <span class="cron-day-field__option-text">
-          {{ locale.ui.everyNDaysStartingAt
-            .replace('{step}', '')
-            .replace('{start}', '') }}
+          {{ locale.ui.everyNDaysStartingAt.replace('{step}', '').replace('{start}', '') }}
         </span>
         <NumberSpinner
           :model-value="stepValue"
@@ -234,7 +232,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, useId } from 'vue'
 import type { FieldItem, CronFormat } from '../core/types'
 import type { UseCronSegmentReturn } from '../composables/useCronSegment'
 import type { LocaleDefinition } from '../locale/types'
@@ -244,8 +242,6 @@ import { DAY_OF_MONTH_FIELD, DAY_OF_WEEK_FIELD } from '../core/fields'
 import FieldGrid from './FieldGrid.vue'
 import NumberSpinner from './NumberSpinner.vue'
 import InlineSelect from './InlineSelect.vue'
-
-let instanceCounter = 0
 
 type DayOption =
   | 'everyDay'
@@ -272,7 +268,7 @@ const props = withDefaults(
   },
 )
 
-const radioGroupName = `cron-day-option-${++instanceCounter}`
+const radioGroupName = `cron-day-option-${useId()}`
 
 const domWrapper = computed(
   () =>
@@ -338,13 +334,10 @@ const activeOption = ref<DayOption>(detectActiveOption())
 
 let isSelecting = false
 
-watch(
-  [() => props.domSegment.segment.value, () => props.dowSegment.segment.value],
-  () => {
-    if (isSelecting) return
-    activeOption.value = detectActiveOption()
-  },
-)
+watch([() => props.domSegment.segment.value, () => props.dowSegment.segment.value], () => {
+  if (isSelecting) return
+  activeOption.value = detectActiveOption()
+})
 
 const stepValue = computed(() => {
   const seg = props.domSegment.segment.value

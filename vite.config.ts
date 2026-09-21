@@ -1,7 +1,10 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import dts from 'vite-plugin-dts'
-import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'node:path'
+
+const rootDir = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig(({ mode }) => {
   const isLib = mode === 'lib'
@@ -21,14 +24,14 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
-        '@': resolve(__dirname, 'src'),
+        '@': resolve(rootDir, 'src'),
       },
     },
     ...(isLib
       ? {
           build: {
             lib: {
-              entry: resolve(__dirname, 'src/lib/index.ts'),
+              entry: resolve(rootDir, 'src/lib/index.ts'),
               name: 'Vue3CronSelector',
               formats: ['es', 'umd'] as const,
               fileName: 'vue3-cron-selector',
