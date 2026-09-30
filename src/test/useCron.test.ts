@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { nextTick, ref } from 'vue'
 import { useCron } from '../lib/composables/useCron'
 
@@ -107,6 +107,37 @@ describe('useCron', () => {
   it('honors previewCount', () => {
     const result = useCron({ modelValue: '* * * * *', previewCount: 7 })
     expect(result.nextExecutions.value).toHaveLength(7)
+  })
+
+  it('does not skip consecutive second-level executions', () => {
+    const result = useCron({ modelValue: '* * * * * *', format: 'spring', previewCount: 3 })
+    const times = result.nextExecutions.value.map((date) => date.getTime())
+    expect(times[1] - times[0]).toBe(1000)
+    expect(times[2] - times[1]).toBe(1000)
+  })
+
+  it('previews Quartz day-of-month and weekday constraints', () => {
+    vi.useFakeTimers()
+    try {
+      vi.setSystemTime(new Date(2026, 0, 1))
+      const monthDay = useCron({ modelValue: '0 0 0 15 * ? *', format: 'quartz' })
+      expect(monthDay.nextExecutions.value[0]?.getDate()).toBe(15)
+
+      const weekday = useCron({ modelValue: '0 0 0 ? * 2#1 *', format: 'quartz' })
+      expect(weekday.nextExecutions.value[0]?.getDate()).toBe(6)
+
+      const nearestWeekday = useCron({ modelValue: '0 0 0 15W * ? *', format: 'quartz' })
+      expect(nearestWeekday.nextExecutions.value[0]?.getDate()).toBe(15)
+
+      const lastWeekday = useCron({ modelValue: '0 0 0 LW * ? *', format: 'quartz' })
+      expect(lastWeekday.nextExecutions.value[0]?.getDate()).toBe(30)
+
+      const offset = useCron({ modelValue: '0 0 0 L-3 * ? *', format: 'quartz' })
+      expect(offset.nextExecutions.value[0]?.getDate()).toBe(28)
+      expect(offset.nextExecutions.value[1]?.getDate()).toBe(25)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('keeps Quartz year constraints in execution previews', () => {

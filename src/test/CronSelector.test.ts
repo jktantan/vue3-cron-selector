@@ -57,6 +57,22 @@ describe('CronSelector', () => {
       props: { disabled: true },
     })
     expect(wrapper.find('.cron-selector--disabled').exists()).toBe(true)
+    expect(
+      wrapper
+        .findAll('.cron-day-field__option input[type="radio"]')
+        .every((radio) => radio.attributes('disabled') !== undefined),
+    ).toBe(true)
+  })
+
+  it('disables day option radios on the day tab', async () => {
+    const wrapper = mount(CronSelector)
+    await wrapper.findAll('.cron-tabs__tab')[2].trigger('click')
+    await wrapper.setProps({ disabled: true })
+    expect(
+      wrapper
+        .findAll('.cron-day-field__option input[type="radio"]')
+        .every((radio) => radio.attributes('disabled') !== undefined),
+    ).toBe(true)
   })
 
   it('renders tabbed panel in inline mode by default', () => {
@@ -79,6 +95,16 @@ describe('CronSelector', () => {
     })
     const input = wrapper.find('.cron-popover__input')
     expect((input.element as HTMLInputElement).value).toBe('0 12 * * *')
+  })
+
+  it('allows mouse focus inside the popover panel', async () => {
+    const wrapper = mount(CronSelector, { props: { mode: 'popover' } })
+    await wrapper.find('.cron-popover__input').trigger('focus')
+    const panel = document.querySelector('.cron-popover__panel')!
+    const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+    panel.dispatchEvent(event)
+    expect(event.defaultPrevented).toBe(false)
+    wrapper.unmount()
   })
 
   it('renders field options for the active tab', () => {

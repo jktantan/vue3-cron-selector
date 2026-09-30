@@ -8,6 +8,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="radioGroupName"
           value="everyDay"
           :checked="activeOption === 'everyDay'"
@@ -23,6 +24,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="radioGroupName"
           value="dayStep"
           :checked="activeOption === 'dayStep'"
@@ -56,6 +58,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="radioGroupName"
           value="specificDow"
           :checked="activeOption === 'specificDow'"
@@ -80,6 +83,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="radioGroupName"
           value="specificDom"
           :checked="activeOption === 'specificDom'"
@@ -104,6 +108,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="radioGroupName"
           value="lastDay"
           :checked="activeOption === 'lastDay'"
@@ -119,6 +124,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="radioGroupName"
           value="lastWeekday"
           :checked="activeOption === 'lastWeekday'"
@@ -134,6 +140,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="radioGroupName"
           value="lastWeekdayOfMonth"
           :checked="activeOption === 'lastWeekdayOfMonth'"
@@ -157,6 +164,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="radioGroupName"
           value="lastDayOffset"
           :checked="activeOption === 'lastDayOffset'"
@@ -182,6 +190,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="radioGroupName"
           value="nearestWeekday"
           :checked="activeOption === 'nearestWeekday'"
@@ -206,6 +215,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="radioGroupName"
           value="nthWeekday"
           :checked="activeOption === 'nthWeekday'"

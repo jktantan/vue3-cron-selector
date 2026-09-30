@@ -201,6 +201,17 @@ describe('selectedToSegment', () => {
     expect(seg.toString()).toBe('5/10')
   })
 
+  it('does not turn a partial arithmetic selection into an open-ended step', () => {
+    const seg = selectedToSegment([5, 15], MINUTE_FIELD)
+    expect(seg.values).toEqual([5, 15])
+    expect(seg.toString()).toBe('5,15')
+  })
+
+  it('deduplicates selected values before detecting a pattern', () => {
+    const seg = selectedToSegment([5, 5, 15], MINUTE_FIELD)
+    expect(seg.values).toEqual([5, 15])
+  })
+
   it('detects contiguous range', () => {
     const seg = selectedToSegment([10, 11, 12, 13, 14], MINUTE_FIELD)
     expect(seg.type).toBe('range')

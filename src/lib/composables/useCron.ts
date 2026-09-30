@@ -186,15 +186,36 @@ export function useCron(options?: UseCronOptions): UseCronReturn {
   const nextExecutions = computed<ReadonlyArray<Date>>(() => {
     if (!isValid.value) return []
     try {
-      const job = new Cron(cronString.value)
+      const dayOfMonth = parsed.value.segments.get('dayOfMonth')
+      const lastDayOffset = dayOfMonth?.type === 'lastDay' ? dayOfMonth.offset : 0
+      const previewExpression = formatConfig.value.fieldOrder
+        .map((fieldId) => {
+          const segment = parsed.value.segments.get(fieldId)
+          if (!segment || segment.type === 'noSpecific') return '*'
+          // Croner does not support Quartz's L-n syntax. Shift L matches below.
+          if (fieldId === 'dayOfMonth' && lastDayOffset > 0) return 'L'
+          return segment.toString()
+        })
+        .join(' ')
+      const job = new Cron(previewExpression)
       const runs: Date[] = []
-      let next = job.nextRun()
-      let count = 0
       const maxCount = Math.max(0, Math.floor(previewCountRef.value))
-      while (next && count < maxCount) {
-        runs.push(next)
-        next = job.nextRun(new Date(next.getTime() + 1000))
-        count++
+      const searchStart = new Date()
+      if (lastDayOffset > 0) searchStart.setDate(searchStart.getDate() + lastDayOffset)
+      let next = job.nextRun(searchStart)
+      while (next && runs.length < maxCount) {
+        if (lastDayOffset === 0) {
+          runs.push(next)
+        } else if (next.getDate() > lastDayOffset) {
+          const shifted = new Date(next)
+          shifted.setDate(shifted.getDate() - lastDayOffset)
+          runs.push(shifted)
+        } else {
+          // The offset has no date in this month, so skip its remaining times.
+          next = job.nextRun(new Date(next.getFullYear(), next.getMonth() + 1, 1))
+          continue
+        }
+        next = job.nextRun(next)
       }
       return runs
     } catch {

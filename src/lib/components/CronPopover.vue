@@ -16,13 +16,7 @@
     <span v-if="!isValid && showError" class="cron-popover__error">{{ error }}</span>
 
     <Teleport to="body">
-      <div
-        v-if="isOpen"
-        ref="panelRef"
-        class="cron-popover__panel"
-        :style="panelStyle"
-        @mousedown.prevent
-      >
+      <div v-if="isOpen" ref="panelRef" class="cron-popover__panel" :style="panelStyle">
         <slot />
       </div>
     </Teleport>

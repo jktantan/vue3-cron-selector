@@ -8,6 +8,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="`cron-field-${fieldId}`"
           value="any"
           :checked="activeType === 'any'"
@@ -23,6 +24,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="`cron-field-${fieldId}`"
           value="step"
           :checked="activeType === 'step'"
@@ -54,6 +56,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="`cron-field-${fieldId}`"
           value="value"
           :checked="activeType === 'value'"
@@ -78,6 +81,7 @@
       >
         <input
           type="radio"
+          :disabled="disabled"
           :name="`cron-field-${fieldId}`"
           value="range"
           :checked="activeType === 'range'"

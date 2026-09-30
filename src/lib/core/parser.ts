@@ -233,7 +233,8 @@ function detectStepPattern(
     }
   }
 
-  return { base: values[0], step }
+  const expectedCount = Math.floor((field.max - values[0]) / step) + 1
+  return values.length === expectedCount ? { base: values[0], step } : null
 }
 
 function detectContiguousRanges(
@@ -263,7 +264,7 @@ export function selectedToSegment(
   selectedValues: ReadonlyArray<number>,
   field: FieldDefinition,
 ): Segment {
-  const sorted = [...selectedValues].sort((a, b) => a - b)
+  const sorted = [...new Set(selectedValues)].sort((a, b) => a - b)
 
   if (sorted.length === 0) {
     return createAnySegment(field)
