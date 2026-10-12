@@ -83,4 +83,48 @@ describe('FieldGrid', () => {
     expect(buttons[2].classes()).toContain('cron-grid__cell--selected')
     expect(buttons[0].classes()).not.toContain('cron-grid__cell--selected')
   })
+
+  it('does not crash with a stale shift-anchor when value is not in items', async () => {
+    const items = makeItems(5)
+    const wrapper = mount(FieldGrid, {
+      props: { items, selected: [1] },
+    })
+    // Simulate the prior anchor pointing at a real item, then trigger a click
+    // with shift held and a value that does not exist in items. The grid must
+    // either ignore the shift range or fall back to the normal toggle path
+    // without producing negative slice ranges.
+    const buttons = wrapper.findAll('button')
+    await buttons[0].trigger('click', { shiftKey: true })
+    const emitted = wrapper.emitted('update:selected')
+    expect(emitted).toBeTruthy()
+    // Either nothing emitted (safe) or a sensible list (no NaN / out-of-range values).
+    if (emitted && emitted.length > 0) {
+      for (const v of emitted[emitted.length - 1][0] as ReadonlyArray<number>) {
+        expect(Number.isInteger(v)).toBe(true)
+        expect(v).toBeGreaterThanOrEqual(0)
+        expect(v).toBeLessThan(items.length)
+      }
+    }
+  })
+
+  it('drops the shift-anchor when the selection is reset externally', async () => {
+    const items = makeItems(5)
+    const wrapper = mount(FieldGrid, {
+      props: { items, selected: [2] },
+    })
+    // Build a known anchor by clicking once (plain click; not shift).
+    const buttons = wrapper.findAll('button')
+    await buttons[2].trigger('click')
+    // Now clear the selection from the outside (simulating a reset button).
+    await wrapper.setProps({ selected: [] })
+    // Trigger a shift-click on a far-away item; the grid must not synthesize
+    // a wide range based on the previous anchor.
+    await buttons[0].trigger('click', { shiftKey: true })
+    const emitted = wrapper.emitted('update:selected')!
+    const last = emitted[emitted.length - 1][0] as ReadonlyArray<number>
+    // The plain shift-click is interpreted as a non-range click on index 0
+    // because the anchor was cleared, so only [0] (or nothing) should appear.
+    expect(last.length).toBeLessThanOrEqual(1)
+    if (last.length === 1) expect(last[0]).toBe(0)
+  })
 })

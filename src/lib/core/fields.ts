@@ -121,8 +121,13 @@ export class FieldWrapper {
     if (this.definition.altValues?.has(trimmed)) {
       return this.definition.altValues.get(trimmed)!
     }
+    // parseInt is too permissive: '5abc' would parse to 5 and ' 5 ' to 5.
+    // Require the whole token to be a numeric literal before falling through.
+    if (!/^-?\d+$/.test(trimmed)) {
+      return null
+    }
     const num = parseInt(trimmed, 10)
-    if (isNaN(num) || !this.contains(num)) {
+    if (!this.contains(num)) {
       return null
     }
     return num

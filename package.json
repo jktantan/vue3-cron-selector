@@ -51,7 +51,7 @@
     "format:check": "prettier --check \"src/**/*.{ts,vue,scss}\""
   },
   "peerDependencies": {
-    "vue": ">=3.3.0"
+    "vue": ">=3.5.0"
   },
   "dependencies": {
     "croner": "^10.0.1"

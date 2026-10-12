@@ -109,6 +109,21 @@ describe('useCron', () => {
     expect(result.nextExecutions.value).toHaveLength(7)
   })
 
+  it('returns an empty list when previewCount is 0', () => {
+    const result = useCron({ modelValue: '* * * * *', previewCount: 0 })
+    expect(result.nextExecutions.value).toEqual([])
+  })
+
+  it('returns an empty list when previewCount is negative', () => {
+    const result = useCron({ modelValue: '* * * * *', previewCount: -3 })
+    expect(result.nextExecutions.value).toEqual([])
+  })
+
+  it('returns an empty list when previewCount is NaN', () => {
+    const result = useCron({ modelValue: '* * * * *', previewCount: Number.NaN })
+    expect(result.nextExecutions.value).toEqual([])
+  })
+
   it('does not skip consecutive second-level executions', () => {
     const result = useCron({ modelValue: '* * * * * *', format: 'spring', previewCount: 3 })
     const times = result.nextExecutions.value.map((date) => date.getTime())

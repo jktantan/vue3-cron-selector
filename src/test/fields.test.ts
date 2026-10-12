@@ -97,6 +97,18 @@ describe('FieldWrapper', () => {
     expect(wrapper.normalize('-1')).toBeNull()
   })
 
+  it('returns null for partially numeric strings instead of silently truncating', () => {
+    const wrapper = new FieldWrapper(MINUTE_FIELD)
+    expect(wrapper.normalize('5abc')).toBeNull()
+    expect(wrapper.normalize('0xff')).toBeNull()
+    expect(wrapper.normalize('1.5')).toBeNull()
+    // Leading/trailing whitespace is trimmed away, so ' 5' and '5 ' are valid.
+    expect(wrapper.normalize(' 5')).toBe(5)
+    expect(wrapper.normalize('5 ')).toBe(5)
+    // But internal whitespace breaks the numeric literal.
+    expect(wrapper.normalize('5 0')).toBeNull()
+  })
+
   it('handles dayOfWeek alt values', () => {
     const wrapper = new FieldWrapper(DAY_OF_WEEK_FIELD)
     expect(wrapper.normalize('mon')).toBe(1)

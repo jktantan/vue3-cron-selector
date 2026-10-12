@@ -206,14 +206,21 @@ export function useCron(options?: UseCronOptions): UseCronReturn {
       while (next && runs.length < maxCount) {
         if (lastDayOffset === 0) {
           runs.push(next)
-        } else if (next.getDate() > lastDayOffset) {
-          const shifted = new Date(next)
-          shifted.setDate(shifted.getDate() - lastDayOffset)
-          runs.push(shifted)
         } else {
-          // The offset has no date in this month, so skip its remaining times.
-          next = job.nextRun(new Date(next.getFullYear(), next.getMonth() + 1, 1))
-          continue
+          // The offset shifts the last day backward, e.g. L-3 means the 3rd-to-last
+          // day of the month. When setDate is given <= 0 it would silently roll
+          // into the previous month, so detect that case and skip this month.
+          const lastDay = next.getDate()
+          const target = lastDay - lastDayOffset
+          if (target > 0) {
+            const shifted = new Date(next)
+            shifted.setDate(target)
+            runs.push(shifted)
+          } else {
+            // The offset has no date in this month, so skip its remaining times.
+            next = job.nextRun(new Date(next.getFullYear(), next.getMonth() + 1, 1))
+            continue
+          }
         }
         next = job.nextRun(next)
       }

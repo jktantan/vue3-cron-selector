@@ -99,4 +99,23 @@ describe('useCronSegment', () => {
     expect(seg.segment.value.type).toBe('range')
     expect(seg.selected.value).toEqual([1, 2, 3, 4, 5])
   })
+
+  it('setType combined produces a combined segment even with a tiny selection', () => {
+    const seg = useCronSegment({ field: MINUTE_FIELD })
+    seg.setSelected([15])
+    seg.setType('combined')
+    expect(seg.segment.value.type).toBe('combined')
+    // The combined segment must cover at least two distinct field positions so
+    // its values are non-trivial, even though the previous selection was a
+    // single value.
+    expect(seg.segment.value.values.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('setType combined respects an existing multi-value selection', () => {
+    const seg = useCronSegment({ field: MINUTE_FIELD })
+    seg.setSelected([5, 25, 47])
+    seg.setType('combined')
+    expect(seg.segment.value.type).toBe('combined')
+    expect(seg.selected.value).toEqual([5, 25, 47])
+  })
 })

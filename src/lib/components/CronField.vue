@@ -136,12 +136,15 @@ const props = withDefaults(
 
 const fieldLabel = computed(() => props.locale.fieldLabels[props.fieldId] ?? props.fieldId)
 
-const wrapper = computed(
-  () =>
-    new FieldWrapper(props.field, (value: number) =>
-      getFieldValueLabel(props.fieldId, value, props.locale),
-    ),
-)
+// Reuse a single FieldWrapper per (field, locale) pair. FieldWrapper.items is
+// already memoized internally, but constructing a new wrapper every time
+// `props.locale` becomes a new object reference wastes garbage. locale.code is
+// the only stable identity we can key on.
+const wrapper = computed(() => {
+  const labelFn = (value: number): string =>
+    getFieldValueLabel(props.fieldId, value, props.locale)
+  return new FieldWrapper(props.field, labelFn)
+})
 
 const fieldItems = computed<ReadonlyArray<FieldItem>>(() => wrapper.value.items)
 

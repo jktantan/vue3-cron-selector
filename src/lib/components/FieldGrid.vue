@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { FieldItem } from '../core/types'
 
 const props = withDefaults(
@@ -42,6 +42,19 @@ const emit = defineEmits<{
 
 const lastClickedIndex = ref(-1)
 
+// When the selection becomes empty (e.g. user cleared everything via a reset
+// button or the parent replaced the selection), drop the shift-click anchor
+// so the next shift+click does not drag-select an unintended range from a
+// stale index.
+watch(
+  () => props.selected,
+  (next) => {
+    if (next.length === 0) {
+      lastClickedIndex.value = -1
+    }
+  },
+)
+
 const gridStyle = computed(() => ({
   gridTemplateColumns: `repeat(${props.cols}, 1fr)`,
 }))
@@ -53,7 +66,7 @@ function isSelected(value: number): boolean {
 function toggleValue(value: number, event: MouseEvent): void {
   const currentIndex = props.items.findIndex((i) => i.value === value)
 
-  if (event.shiftKey && lastClickedIndex.value >= 0) {
+  if (event.shiftKey && lastClickedIndex.value >= 0 && currentIndex >= 0) {
     const from = Math.min(lastClickedIndex.value, currentIndex)
     const to = Math.max(lastClickedIndex.value, currentIndex)
     const rangeValues = props.items.slice(from, to + 1).map((i) => i.value)
@@ -74,6 +87,13 @@ function toggleValue(value: number, event: MouseEvent): void {
     )
   }
 
-  lastClickedIndex.value = currentIndex
+  // Track the click position when it lands on a known item. Guard against
+  // currentIndex === -1 (value not in items) so a stray stale anchor does not
+  // point at a phantom index for the next shift-click.
+  if (currentIndex >= 0) {
+    lastClickedIndex.value = currentIndex
+  } else {
+    lastClickedIndex.value = -1
+  }
 }
 </script>

@@ -104,11 +104,15 @@
       <!-- 5. On the last day of the month -->
       <label
         class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeOption === 'lastDay' }"
+        :class="{
+          'cron-day-field__option--active': activeOption === 'lastDay',
+          'cron-day-field__option--disabled': isCrontab,
+        }"
+        :title="isCrontab ? 'Quartz only' : ''"
       >
         <input
           type="radio"
-          :disabled="disabled"
+          :disabled="disabled || isCrontab"
           :name="radioGroupName"
           value="lastDay"
           :checked="activeOption === 'lastDay'"
@@ -120,11 +124,15 @@
       <!-- 6. On the last weekday of the month -->
       <label
         class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeOption === 'lastWeekday' }"
+        :class="{
+          'cron-day-field__option--active': activeOption === 'lastWeekday',
+          'cron-day-field__option--disabled': isCrontab,
+        }"
+        :title="isCrontab ? 'Quartz only' : ''"
       >
         <input
           type="radio"
-          :disabled="disabled"
+          :disabled="disabled || isCrontab"
           :name="radioGroupName"
           value="lastWeekday"
           :checked="activeOption === 'lastWeekday'"
@@ -136,11 +144,15 @@
       <!-- 7. On the last [weekday] of the month -->
       <label
         class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeOption === 'lastWeekdayOfMonth' }"
+        :class="{
+          'cron-day-field__option--active': activeOption === 'lastWeekdayOfMonth',
+          'cron-day-field__option--disabled': isCrontab,
+        }"
+        :title="isCrontab ? 'Quartz only' : ''"
       >
         <input
           type="radio"
-          :disabled="disabled"
+          :disabled="disabled || isCrontab"
           :name="radioGroupName"
           value="lastWeekdayOfMonth"
           :checked="activeOption === 'lastWeekdayOfMonth'"
@@ -152,7 +164,7 @@
         <InlineSelect
           :model-value="lastWeekdayValue"
           :items="weekdaySelectItems"
-          :disabled="activeOption !== 'lastWeekdayOfMonth'"
+          :disabled="activeOption !== 'lastWeekdayOfMonth' || isCrontab"
           @update:model-value="onLastWeekdayUpdate"
         />
       </label>
@@ -160,11 +172,15 @@
       <!-- 8. N day(s) before end of month -->
       <label
         class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeOption === 'lastDayOffset' }"
+        :class="{
+          'cron-day-field__option--active': activeOption === 'lastDayOffset',
+          'cron-day-field__option--disabled': isCrontab,
+        }"
+        :title="isCrontab ? 'Quartz only' : ''"
       >
         <input
           type="radio"
-          :disabled="disabled"
+          :disabled="disabled || isCrontab"
           :name="radioGroupName"
           value="lastDayOffset"
           :checked="activeOption === 'lastDayOffset'"
@@ -177,7 +193,7 @@
           :model-value="lastDayOffsetValue"
           :min="1"
           :max="30"
-          :disabled="activeOption !== 'lastDayOffset'"
+          :disabled="activeOption !== 'lastDayOffset' || isCrontab"
           @update:model-value="onLastDayOffsetUpdate"
         />
         <span class="cron-day-field__inline-label">{{ locale.ui.days }}</span>
@@ -186,11 +202,15 @@
       <!-- 9. Nearest weekday to the Nth -->
       <label
         class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeOption === 'nearestWeekday' }"
+        :class="{
+          'cron-day-field__option--active': activeOption === 'nearestWeekday',
+          'cron-day-field__option--disabled': isCrontab,
+        }"
+        :title="isCrontab ? 'Quartz only' : ''"
       >
         <input
           type="radio"
-          :disabled="disabled"
+          :disabled="disabled || isCrontab"
           :name="radioGroupName"
           value="nearestWeekday"
           :checked="activeOption === 'nearestWeekday'"
@@ -203,7 +223,7 @@
           :model-value="nearestWeekdayDay"
           :min="1"
           :max="31"
-          :disabled="activeOption !== 'nearestWeekday'"
+          :disabled="activeOption !== 'nearestWeekday' || isCrontab"
           @update:model-value="onNearestWeekdayDayUpdate"
         />
       </label>
@@ -211,11 +231,15 @@
       <!-- 10. On the Nth [weekday] of the month -->
       <label
         class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeOption === 'nthWeekday' }"
+        :class="{
+          'cron-day-field__option--active': activeOption === 'nthWeekday',
+          'cron-day-field__option--disabled': isCrontab,
+        }"
+        :title="isCrontab ? 'Quartz only' : ''"
       >
         <input
           type="radio"
-          :disabled="disabled"
+          :disabled="disabled || isCrontab"
           :name="radioGroupName"
           value="nthWeekday"
           :checked="activeOption === 'nthWeekday'"
@@ -227,13 +251,13 @@
         <InlineSelect
           :model-value="nthOrdinal"
           :items="ordinalSelectItems"
-          :disabled="activeOption !== 'nthWeekday'"
+          :disabled="activeOption !== 'nthWeekday' || isCrontab"
           @update:model-value="onNthOrdinalUpdate"
         />
         <InlineSelect
           :model-value="nthWeekdayValue"
           :items="weekdaySelectItems"
-          :disabled="activeOption !== 'nthWeekday'"
+          :disabled="activeOption !== 'nthWeekday' || isCrontab"
           @update:model-value="onNthWeekdayUpdate"
         />
       </label>
@@ -243,7 +267,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, useId } from 'vue'
-import type { FieldItem, CronFormat } from '../core/types'
+import type { FieldItem, CronFormat, FieldDefinition } from '../core/types'
 import type { UseCronSegmentReturn } from '../composables/useCronSegment'
 import type { LocaleDefinition } from '../locale/types'
 import { FieldWrapper } from '../core/fields'
@@ -280,19 +304,29 @@ const props = withDefaults(
 
 const radioGroupName = `cron-day-option-${useId()}`
 
-const domWrapper = computed(
-  () =>
-    new FieldWrapper(DAY_OF_MONTH_FIELD, (value: number) =>
-      getFieldValueLabel('dayOfMonth', value, props.locale),
-    ),
-)
+// Module-level cache so multiple CronDayField instances (and re-renders that
+// produce a fresh `props.locale` reference) share the same FieldWrapper per
+// (fieldId, localeCode). FieldWrapper.items is already memoized internally;
+// this layer just stops us from throwing away the whole wrapper each render.
+const wrapperCache = new Map<string, FieldWrapper>()
+function getWrapper(
+  fieldId: 'dayOfMonth' | 'dayOfWeek',
+  definition: FieldDefinition,
+  locale: LocaleDefinition,
+): FieldWrapper {
+  const key = `${fieldId}|${locale.code}`
+  const hit = wrapperCache.get(key)
+  if (hit) return hit
+  const wrapper = new FieldWrapper(definition, (value: number) =>
+    getFieldValueLabel(fieldId, value, locale),
+  )
+  wrapperCache.set(key, wrapper)
+  return wrapper
+}
 
-const dowWrapper = computed(
-  () =>
-    new FieldWrapper(DAY_OF_WEEK_FIELD, (value: number) =>
-      getFieldValueLabel('dayOfWeek', value, props.locale),
-    ),
-)
+const domWrapper = computed(() => getWrapper('dayOfMonth', DAY_OF_MONTH_FIELD, props.locale))
+
+const dowWrapper = computed(() => getWrapper('dayOfWeek', DAY_OF_WEEK_FIELD, props.locale))
 
 const domItems = computed<ReadonlyArray<FieldItem>>(() => domWrapper.value.items)
 const weekdayItems = computed<ReadonlyArray<FieldItem>>(() => dowWrapper.value.items)
@@ -343,6 +377,27 @@ function detectActiveOption(): DayOption {
 const activeOption = ref<DayOption>(detectActiveOption())
 
 let isSelecting = false
+
+const isCrontab = computed(() => props.format === 'crontab')
+
+// Quartz-only day options are not representable in crontab (parser rejects them).
+// Hide them in crontab mode so the user cannot trigger a silent no-op, and
+// fall back to "every day" if the current expression somehow depends on them.
+const QUARTZ_ONLY_OPTIONS: ReadonlySet<DayOption> = new Set<DayOption>([
+  'lastDay',
+  'lastWeekday',
+  'lastWeekdayOfMonth',
+  'lastDayOffset',
+  'nearestWeekday',
+  'nthWeekday',
+])
+
+watch(isCrontab, (val) => {
+  if (!val) return
+  if (QUARTZ_ONLY_OPTIONS.has(activeOption.value)) {
+    selectOption('everyDay')
+  }
+})
 
 watch([() => props.domSegment.segment.value, () => props.dowSegment.segment.value], () => {
   if (isSelecting) return

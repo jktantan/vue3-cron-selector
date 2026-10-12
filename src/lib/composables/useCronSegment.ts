@@ -2,8 +2,10 @@ import { ref, watch, type Ref } from 'vue'
 import type { Segment, SegmentType, FieldDefinition } from '../core/types'
 import {
   createAnySegment,
+  createCombinedSegment,
   createRangeSegment,
   createStepSegment,
+  createValueSegment,
   createNoSpecificSegment,
   createLastDaySegment,
   createLastWeekdaySegment,
@@ -79,8 +81,51 @@ export function useCronSegment(options: UseCronSegmentOptions): UseCronSegmentRe
         segment.value = createStepSegment('*', 1, field)
         break
       case 'value':
-      case 'combined':
         segment.value = selectedToSegment(selected.value, field)
+        break
+      case 'combined':
+        // Build a combined segment explicitly so the type is always 'combined',
+        // independent of selectedToSegment's pattern-detection (which would
+        // collapse arithmetic progressions into a step segment).
+        const parts: Segment[] = []
+        if (selected.value.length >= 2) {
+          const seed = [...selected.value].sort((a, b) => a - b)
+          let runStart = seed[0]
+          let runPrev = seed[0]
+          const pushRange = (from: number, to: number): void => {
+            if (from === to) parts.push(createValueSegment(from, field))
+            else parts.push(createRangeSegment(from, to, field))
+          }
+          for (let i = 1; i < seed.length; i++) {
+            if (seed[i] === runPrev + 1) {
+              runPrev = seed[i]
+            } else {
+              pushRange(runStart, runPrev)
+              runStart = seed[i]
+              runPrev = seed[i]
+            }
+          }
+          pushRange(runStart, runPrev)
+        } else {
+          // Seed two distinct single-value parts so the type contract holds even
+          // for a sparse selection. We deliberately avoid createRangeSegment
+          // here because [min, min+1] would otherwise collapse to one part.
+          parts.push(createValueSegment(field.min, field))
+          const second = Math.min(field.min + 1, field.max)
+          if (second !== field.min) {
+            parts.push(createValueSegment(second, field))
+          } else {
+            // Single-value field edge case: synthesize two adjacent values by
+            // widening to the next valid step if possible; otherwise fall back
+            // to a value segment below.
+            parts.push(createValueSegment(field.max, field))
+          }
+        }
+        if (parts.length >= 2) {
+          segment.value = createCombinedSegment(parts, field)
+        } else {
+          segment.value = parts[0] ?? createAnySegment(field)
+        }
         break
       case 'noSpecific':
         segment.value = createNoSpecificSegment()
