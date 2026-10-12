@@ -101,166 +101,150 @@
         />
       </div>
 
-      <!-- 5. On the last day of the month -->
-      <label
-        class="cron-day-field__option"
-        :class="{
-          'cron-day-field__option--active': activeOption === 'lastDay',
-          'cron-day-field__option--disabled': isCrontab,
-        }"
-        :title="isCrontab ? 'Quartz only' : ''"
-      >
-        <input
-          type="radio"
-          :disabled="disabled || isCrontab"
-          :name="radioGroupName"
-          value="lastDay"
-          :checked="activeOption === 'lastDay'"
-          @change="selectOption('lastDay')"
-        />
-        <span class="cron-day-field__option-text">{{ locale.ui.lastDayOfMonth }}</span>
-      </label>
+      <!-- Quartz-only day options (last day / last weekday / L-n / W / nth
+           weekday). Standard crontab does not support these — they are hidden
+           entirely in crontab mode instead of being disabled, so the UI stays
+           clean and unambiguous for POSIX-style users. The selectOption
+           watch still falls back to 'every day' if the user switches format
+           while a Quartz-only option is active. -->
+      <template v-if="!isCrontab">
+        <!-- 5. On the last day of the month -->
+        <label
+          class="cron-day-field__option"
+          :class="{ 'cron-day-field__option--active': activeOption === 'lastDay' }"
+        >
+          <input
+            type="radio"
+            :disabled="disabled"
+            :name="radioGroupName"
+            value="lastDay"
+            :checked="activeOption === 'lastDay'"
+            @change="selectOption('lastDay')"
+          />
+          <span class="cron-day-field__option-text">{{ locale.ui.lastDayOfMonth }}</span>
+        </label>
 
-      <!-- 6. On the last weekday of the month -->
-      <label
-        class="cron-day-field__option"
-        :class="{
-          'cron-day-field__option--active': activeOption === 'lastWeekday',
-          'cron-day-field__option--disabled': isCrontab,
-        }"
-        :title="isCrontab ? 'Quartz only' : ''"
-      >
-        <input
-          type="radio"
-          :disabled="disabled || isCrontab"
-          :name="radioGroupName"
-          value="lastWeekday"
-          :checked="activeOption === 'lastWeekday'"
-          @change="selectOption('lastWeekday')"
-        />
-        <span class="cron-day-field__option-text">{{ locale.ui.lastWeekdayOfMonth }}</span>
-      </label>
+        <!-- 6. On the last weekday of the month -->
+        <label
+          class="cron-day-field__option"
+          :class="{ 'cron-day-field__option--active': activeOption === 'lastWeekday' }"
+        >
+          <input
+            type="radio"
+            :disabled="disabled"
+            :name="radioGroupName"
+            value="lastWeekday"
+            :checked="activeOption === 'lastWeekday'"
+            @change="selectOption('lastWeekday')"
+          />
+          <span class="cron-day-field__option-text">{{ locale.ui.lastWeekdayOfMonth }}</span>
+        </label>
 
-      <!-- 7. On the last [weekday] of the month -->
-      <label
-        class="cron-day-field__option"
-        :class="{
-          'cron-day-field__option--active': activeOption === 'lastWeekdayOfMonth',
-          'cron-day-field__option--disabled': isCrontab,
-        }"
-        :title="isCrontab ? 'Quartz only' : ''"
-      >
-        <input
-          type="radio"
-          :disabled="disabled || isCrontab"
-          :name="radioGroupName"
-          value="lastWeekdayOfMonth"
-          :checked="activeOption === 'lastWeekdayOfMonth'"
-          @change="selectOption('lastWeekdayOfMonth')"
-        />
-        <span class="cron-day-field__option-text">
-          {{ locale.ui.lastSpecificWeekdayOfMonth.replace('{weekday}', '') }}
-        </span>
-        <InlineSelect
-          :model-value="lastWeekdayValue"
-          :items="weekdaySelectItems"
-          :disabled="activeOption !== 'lastWeekdayOfMonth' || isCrontab"
-          @update:model-value="onLastWeekdayUpdate"
-        />
-      </label>
+        <!-- 7. On the last [weekday] of the month -->
+        <label
+          class="cron-day-field__option"
+          :class="{ 'cron-day-field__option--active': activeOption === 'lastWeekdayOfMonth' }"
+        >
+          <input
+            type="radio"
+            :disabled="disabled"
+            :name="radioGroupName"
+            value="lastWeekdayOfMonth"
+            :checked="activeOption === 'lastWeekdayOfMonth'"
+            @change="selectOption('lastWeekdayOfMonth')"
+          />
+          <span class="cron-day-field__option-text">
+            {{ locale.ui.lastSpecificWeekdayOfMonth.replace('{weekday}', '') }}
+          </span>
+          <InlineSelect
+            :model-value="lastWeekdayValue"
+            :items="weekdaySelectItems"
+            :disabled="activeOption !== 'lastWeekdayOfMonth'"
+            @update:model-value="onLastWeekdayUpdate"
+          />
+        </label>
 
-      <!-- 8. N day(s) before end of month -->
-      <label
-        class="cron-day-field__option"
-        :class="{
-          'cron-day-field__option--active': activeOption === 'lastDayOffset',
-          'cron-day-field__option--disabled': isCrontab,
-        }"
-        :title="isCrontab ? 'Quartz only' : ''"
-      >
-        <input
-          type="radio"
-          :disabled="disabled || isCrontab"
-          :name="radioGroupName"
-          value="lastDayOffset"
-          :checked="activeOption === 'lastDayOffset'"
-          @change="selectOption('lastDayOffset')"
-        />
-        <span class="cron-day-field__option-text">
-          {{ locale.ui.daysBeforeEndOfMonth.replace('{n}', '') }}
-        </span>
-        <NumberSpinner
-          :model-value="lastDayOffsetValue"
-          :min="1"
-          :max="30"
-          :disabled="activeOption !== 'lastDayOffset' || isCrontab"
-          @update:model-value="onLastDayOffsetUpdate"
-        />
-        <span class="cron-day-field__inline-label">{{ locale.ui.days }}</span>
-      </label>
+        <!-- 8. N day(s) before end of month -->
+        <label
+          class="cron-day-field__option"
+          :class="{ 'cron-day-field__option--active': activeOption === 'lastDayOffset' }"
+        >
+          <input
+            type="radio"
+            :disabled="disabled"
+            :name="radioGroupName"
+            value="lastDayOffset"
+            :checked="activeOption === 'lastDayOffset'"
+            @change="selectOption('lastDayOffset')"
+          />
+          <span class="cron-day-field__option-text">
+            {{ locale.ui.daysBeforeEndOfMonth.replace('{n}', '') }}
+          </span>
+          <NumberSpinner
+            :model-value="lastDayOffsetValue"
+            :min="1"
+            :max="30"
+            :disabled="activeOption !== 'lastDayOffset'"
+            @update:model-value="onLastDayOffsetUpdate"
+          />
+          <span class="cron-day-field__inline-label">{{ locale.ui.days }}</span>
+        </label>
 
-      <!-- 9. Nearest weekday to the Nth -->
-      <label
-        class="cron-day-field__option"
-        :class="{
-          'cron-day-field__option--active': activeOption === 'nearestWeekday',
-          'cron-day-field__option--disabled': isCrontab,
-        }"
-        :title="isCrontab ? 'Quartz only' : ''"
-      >
-        <input
-          type="radio"
-          :disabled="disabled || isCrontab"
-          :name="radioGroupName"
-          value="nearestWeekday"
-          :checked="activeOption === 'nearestWeekday'"
-          @change="selectOption('nearestWeekday')"
-        />
-        <span class="cron-day-field__option-text">
-          {{ locale.ui.nearestWeekdayTo.replace('{day}', '') }}
-        </span>
-        <NumberSpinner
-          :model-value="nearestWeekdayDay"
-          :min="1"
-          :max="31"
-          :disabled="activeOption !== 'nearestWeekday' || isCrontab"
-          @update:model-value="onNearestWeekdayDayUpdate"
-        />
-      </label>
+        <!-- 9. Nearest weekday to the Nth -->
+        <label
+          class="cron-day-field__option"
+          :class="{ 'cron-day-field__option--active': activeOption === 'nearestWeekday' }"
+        >
+          <input
+            type="radio"
+            :disabled="disabled"
+            :name="radioGroupName"
+            value="nearestWeekday"
+            :checked="activeOption === 'nearestWeekday'"
+            @change="selectOption('nearestWeekday')"
+          />
+          <span class="cron-day-field__option-text">
+            {{ locale.ui.nearestWeekdayTo.replace('{day}', '') }}
+          </span>
+          <NumberSpinner
+            :model-value="nearestWeekdayDay"
+            :min="1"
+            :max="31"
+            :disabled="activeOption !== 'nearestWeekday'"
+            @update:model-value="onNearestWeekdayDayUpdate"
+          />
+        </label>
 
-      <!-- 10. On the Nth [weekday] of the month -->
-      <label
-        class="cron-day-field__option"
-        :class="{
-          'cron-day-field__option--active': activeOption === 'nthWeekday',
-          'cron-day-field__option--disabled': isCrontab,
-        }"
-        :title="isCrontab ? 'Quartz only' : ''"
-      >
-        <input
-          type="radio"
-          :disabled="disabled || isCrontab"
-          :name="radioGroupName"
-          value="nthWeekday"
-          :checked="activeOption === 'nthWeekday'"
-          @change="selectOption('nthWeekday')"
-        />
-        <span class="cron-day-field__option-text">
-          {{ locale.ui.nthWeekdayOfMonth.replace('{nth}', '').replace('{weekday}', '') }}
-        </span>
-        <InlineSelect
-          :model-value="nthOrdinal"
-          :items="ordinalSelectItems"
-          :disabled="activeOption !== 'nthWeekday' || isCrontab"
-          @update:model-value="onNthOrdinalUpdate"
-        />
-        <InlineSelect
-          :model-value="nthWeekdayValue"
-          :items="weekdaySelectItems"
-          :disabled="activeOption !== 'nthWeekday' || isCrontab"
-          @update:model-value="onNthWeekdayUpdate"
-        />
-      </label>
+        <!-- 10. On the Nth [weekday] of the month -->
+        <label
+          class="cron-day-field__option"
+          :class="{ 'cron-day-field__option--active': activeOption === 'nthWeekday' }"
+        >
+          <input
+            type="radio"
+            :disabled="disabled"
+            :name="radioGroupName"
+            value="nthWeekday"
+            :checked="activeOption === 'nthWeekday'"
+            @change="selectOption('nthWeekday')"
+          />
+          <span class="cron-day-field__option-text">
+            {{ locale.ui.nthWeekdayOfMonth.replace('{nth}', '').replace('{weekday}', '') }}
+          </span>
+          <InlineSelect
+            :model-value="nthOrdinal"
+            :items="ordinalSelectItems"
+            :disabled="activeOption !== 'nthWeekday'"
+            @update:model-value="onNthOrdinalUpdate"
+          />
+          <InlineSelect
+            :model-value="nthWeekdayValue"
+            :items="weekdaySelectItems"
+            :disabled="activeOption !== 'nthWeekday'"
+            @update:model-value="onNthWeekdayUpdate"
+          />
+        </label>
+      </template>
     </div>
   </div>
 </template>

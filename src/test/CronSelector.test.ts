@@ -131,30 +131,30 @@ describe('CronSelector', () => {
     expect(wrapper.find('.cron-day-field__options').exists()).toBe(true)
   })
 
-  it('disables Quartz-only day options in crontab mode', async () => {
+  it('hides Quartz-only day options in crontab mode', async () => {
     const wrapper = mount(CronSelector, {
       props: { format: 'crontab' },
     })
     await wrapper.findAll('.cron-tabs__tab')[2].trigger('click')
     const quartzOnlyValues = ['lastDay', 'lastWeekday', 'lastWeekdayOfMonth', 'lastDayOffset', 'nearestWeekday', 'nthWeekday']
     const radios = wrapper.findAll('.cron-day-field__option input[type="radio"]')
+    const foundValues = radios.map((r) => r.attributes('value'))
     for (const value of quartzOnlyValues) {
-      const radio = radios.find((r) => r.attributes('value') === value)
-      expect(radio, `radio ${value} should exist`).toBeTruthy()
-      expect(radio!.attributes('disabled'), `radio ${value} should be disabled in crontab`).toBeDefined()
+      expect(foundValues, `radio ${value} should be hidden in crontab`).not.toContain(value)
     }
   })
 
-  it('enables Quartz-only day options in quartz mode', async () => {
+  it('shows Quartz-only day options in quartz mode', async () => {
     const wrapper = mount(CronSelector, {
       props: { format: 'quartz' },
     })
     await wrapper.findAll('.cron-tabs__tab')[3].trigger('click')
     const quartzOnlyValues = ['lastDay', 'lastWeekday', 'lastWeekdayOfMonth', 'lastDayOffset', 'nearestWeekday', 'nthWeekday']
     const radios = wrapper.findAll('.cron-day-field__option input[type="radio"]')
+    const foundValues = radios.map((r) => r.attributes('value'))
     for (const value of quartzOnlyValues) {
+      expect(foundValues, `radio ${value} should be visible in quartz`).toContain(value)
       const radio = radios.find((r) => r.attributes('value') === value)
-      expect(radio, `radio ${value} should exist`).toBeTruthy()
       expect(radio!.attributes('disabled'), `radio ${value} should be enabled in quartz`).toBeUndefined()
     }
   })
