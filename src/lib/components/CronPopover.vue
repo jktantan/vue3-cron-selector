@@ -24,9 +24,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, watch, onBeforeUnmount, nextTick, provide } from 'vue'
 import type { LocaleDefinition } from '../locale/types'
 import { calcPlacement } from '../utils/positioning'
+import { FloatingPanelKey, type FloatingPanelHost } from '../index'
 
 const props = withDefaults(
   defineProps<{
@@ -60,6 +61,19 @@ const panelStyle = computed(() => ({
   minWidth: `${panelPosition.value.width}px`,
 }))
 
+// Collect floating child panels (e.g. InlineSelect dropdowns) so that clicks
+// inside them do not trigger the popover's click-outside close logic.
+const floatingPanels = new Set<HTMLElement>()
+const floatingHost: FloatingPanelHost = {
+  register(el) {
+    floatingPanels.add(el)
+  },
+  unregister(el) {
+    floatingPanels.delete(el)
+  },
+}
+provide(FloatingPanelKey, floatingHost)
+
 function updatePosition(): void {
   if (!inputRef.value) return
   const rect = inputRef.value.getBoundingClientRect()
@@ -81,6 +95,7 @@ function open(): void {
   if (props.disabled || isOpen.value) return
   isOpen.value = true
   document.addEventListener('mousedown', handleClickOutside)
+  document.addEventListener('keydown', handleEscapeKey)
   window.addEventListener('resize', updatePosition)
   window.addEventListener('scroll', updatePosition, true)
   nextTick(updatePosition)
@@ -89,15 +104,41 @@ function open(): void {
 function close(): void {
   isOpen.value = false
   document.removeEventListener('mousedown', handleClickOutside)
+  document.removeEventListener('keydown', handleEscapeKey)
   window.removeEventListener('resize', updatePosition)
   window.removeEventListener('scroll', updatePosition, true)
 }
 
 function handleClickOutside(event: MouseEvent): void {
-  const target = event.target as HTMLElement
+  const target = event.target as Node
   if (containerRef.value?.contains(target)) return
   if (panelRef.value?.contains(target)) return
-  if (target.closest?.('.cron-inline-select__dropdown')) return
+  for (const el of floatingPanels) {
+    if (el.contains(target)) return
+  }
+  close()
+}
+
+// Global Escape handler so the popover closes regardless of which element
+// inside the panel currently owns focus (e.g. a NumberSpinner input or the
+// FieldGrid buttons). Without it, pressing Esc after the user has tabbed
+// out of the trigger input would leave the panel open.
+function handleEscapeKey(event: KeyboardEvent): void {
+  if (event.key !== 'Escape') return
+  // Defer to the closest enclosing InlineSelect if its dropdown is open, so
+  // each layer can react to its own Esc one in the right order.
+  if (floatingPanels.size > 0) {
+    const top = event.target as Node | null
+    if (top) {
+      for (const el of floatingPanels) {
+        if (el.contains(top)) {
+          // Let the dropdown's own handler run first; only close the popover
+          // when the focused element is not inside any registered dropdown.
+          return
+        }
+      }
+    }
+  }
   close()
 }
 

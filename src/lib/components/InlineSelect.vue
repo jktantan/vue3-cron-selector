@@ -44,9 +44,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, inject } from 'vue'
 import type { FieldItem } from '../core/types'
 import { calcPlacement } from '../utils/positioning'
+import { FloatingPanelKey } from '../index'
 import ChevronIcon from './icons/ChevronIcon.vue'
 
 const props = withDefaults(
@@ -74,6 +75,11 @@ const triggerEl = ref<HTMLButtonElement | null>(null)
 const dropdownEl = ref<HTMLUListElement | null>(null)
 const wrapperRef = ref<HTMLDivElement | null>(null)
 const dropdownStyle = ref<Record<string, string>>({})
+
+// Optional: if a parent (e.g. CronPopover) provides a FloatingPanelHost, register
+// our dropdown so its click-outside logic can recognize this floating element
+// as part of itself instead of the outside world.
+const floatingHost = inject(FloatingPanelKey, null)
 
 const displayLabel = computed(() => {
   if (props.multiple && Array.isArray(props.modelValue)) {
@@ -210,6 +216,15 @@ watch(isOpen, (val) => {
     window.removeEventListener('resize', updateDropdownPosition)
     window.removeEventListener('scroll', updateDropdownPosition, true)
   }
+  // Register / unregister the dropdown with the floating host so an enclosing
+  // popover treats clicks here as "inside" rather than triggering close.
+  if (floatingHost) {
+    if (val && dropdownEl.value) {
+      floatingHost.register(dropdownEl.value)
+    } else if (!val && dropdownEl.value) {
+      floatingHost.unregister(dropdownEl.value)
+    }
+  }
 })
 
 onMounted(() => {
@@ -221,5 +236,8 @@ onBeforeUnmount(() => {
   document.removeEventListener('cron-inline-select:open', onOtherSelectOpen)
   window.removeEventListener('resize', updateDropdownPosition)
   window.removeEventListener('scroll', updateDropdownPosition, true)
+  if (floatingHost && dropdownEl.value) {
+    floatingHost.unregister(dropdownEl.value)
+  }
 })
 </script>

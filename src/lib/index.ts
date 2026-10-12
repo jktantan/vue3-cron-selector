@@ -1,10 +1,22 @@
-import type { App } from 'vue'
+import type { App, InjectionKey } from 'vue'
 import CronSelector from './components/CronSelector.vue'
 
 import './theme/variables.scss'
 import './theme/cron-selector.scss'
 
 export { default as CronSelector } from './components/CronSelector.vue'
+
+// Provide/inject bridge so CronPopover and InlineSelect (children of the popover
+// panel) can register their floating dropdowns without stringly-typed class
+// lookups. Each InlineSelect exposes its dropdown element ref; CronPopover
+// collects them and treats clicks inside any of them as "still inside the
+// popover" instead of closing.
+export interface FloatingPanelHost {
+  register(el: HTMLElement): void
+  unregister(el: HTMLElement): void
+}
+
+export const FloatingPanelKey: InjectionKey<FloatingPanelHost> = Symbol('cronFloatingPanels')
 
 export { useCron } from './composables/useCron'
 export type { UseCronOptions, UseCronReturn } from './composables/useCron'

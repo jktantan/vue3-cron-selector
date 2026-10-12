@@ -107,9 +107,55 @@ describe('CronSelector', () => {
     wrapper.unmount()
   })
 
+  it('closes the popover when Escape is pressed from inside the panel', async () => {
+    const wrapper = mount(CronSelector, {
+      props: { mode: 'popover', modelValue: '* * * * *' },
+    })
+    // Trigger focus on the input to open the popover. Use the underlying input
+    // element so the focus event reaches the host listener.
+    const inputEl = wrapper.find('input').element as HTMLInputElement
+    inputEl.dispatchEvent(new FocusEvent('focus', { bubbles: true }))
+    await wrapper.vm.$nextTick()
+    expect(document.querySelector('.cron-popover__panel')).toBeTruthy()
+    // Fire Escape on document since the popover listens there. This simulates
+    // the user having tabbed focus into a control inside the panel.
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    await wrapper.vm.$nextTick()
+    expect(document.querySelector('.cron-popover__panel')).toBeFalsy()
+    wrapper.unmount()
+  })
+
   it('renders field options for the active tab', () => {
     const wrapper = mount(CronSelector)
     expect(wrapper.find('.cron-day-field').exists()).toBe(true)
     expect(wrapper.find('.cron-day-field__options').exists()).toBe(true)
+  })
+
+  it('disables Quartz-only day options in crontab mode', async () => {
+    const wrapper = mount(CronSelector, {
+      props: { format: 'crontab' },
+    })
+    await wrapper.findAll('.cron-tabs__tab')[2].trigger('click')
+    const quartzOnlyValues = ['lastDay', 'lastWeekday', 'lastWeekdayOfMonth', 'lastDayOffset', 'nearestWeekday', 'nthWeekday']
+    const radios = wrapper.findAll('.cron-day-field__option input[type="radio"]')
+    for (const value of quartzOnlyValues) {
+      const radio = radios.find((r) => r.attributes('value') === value)
+      expect(radio, `radio ${value} should exist`).toBeTruthy()
+      expect(radio!.attributes('disabled'), `radio ${value} should be disabled in crontab`).toBeDefined()
+    }
+  })
+
+  it('enables Quartz-only day options in quartz mode', async () => {
+    const wrapper = mount(CronSelector, {
+      props: { format: 'quartz' },
+    })
+    await wrapper.findAll('.cron-tabs__tab')[3].trigger('click')
+    const quartzOnlyValues = ['lastDay', 'lastWeekday', 'lastWeekdayOfMonth', 'lastDayOffset', 'nearestWeekday', 'nthWeekday']
+    const radios = wrapper.findAll('.cron-day-field__option input[type="radio"]')
+    for (const value of quartzOnlyValues) {
+      const radio = radios.find((r) => r.attributes('value') === value)
+      expect(radio, `radio ${value} should exist`).toBeTruthy()
+      expect(radio!.attributes('disabled'), `radio ${value} should be enabled in quartz`).toBeUndefined()
+    }
   })
 })
