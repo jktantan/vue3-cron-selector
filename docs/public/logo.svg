@@ -1,0 +1,40 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 48 48"
+  width="48"
+  height="48"
+  role="img"
+  aria-label="vue3-cron-selector"
+>
+  <title>vue3-cron-selector</title>
+  <defs>
+    <linearGradient id="cron-mark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#4338ca" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded brand tile -->
+  <rect width="48" height="48" rx="11" fill="url(#cron-mark)" />
+
+  <!-- Dial ticks (12 / 6 / 9 / 3) -->
+  <g stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.85">
+    <path d="M24 8v2.5" />
+    <path d="M24 37.5V40" />
+    <path d="M8 24h2.5" />
+    <path d="M37.5 24H40" />
+  </g>
+
+  <!-- Dial face -->
+  <circle cx="24" cy="24" r="12" fill="none" stroke="#ffffff" stroke-width="2.5" />
+
+  <!-- Hands: 12 o'clock and 4 o'clock, the classic cron clock -->
+  <path
+    d="M24 16.5v8.25l5.5 3.25"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
