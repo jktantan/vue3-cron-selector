@@ -10,6 +10,8 @@
 | `disabled` | `boolean` | `false` | 禁用全部交互并使面板变暗 |
 | `mode` | `'inline' \| 'popover'` | `'inline'` | 始终可见的面板，或聚焦后展开的输入框 |
 | `previewCount` | `number` | `5` | 展示的后续执行时间数量 |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | 当前实例的色调：`auto` 跟随 `html.dark` 约定，详见[主题定制](/zh/guide/theming) |
+| `primaryColor` | `string` | — | 自定义主色（任意 CSS 颜色），自动生成 hover/浅色/边框派生色 |
 | `cols` | `Partial<Record<string, number>>` | — | 按字段覆盖网格列数 |
 
 ### 默认列数

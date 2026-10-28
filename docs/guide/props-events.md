@@ -10,6 +10,8 @@
 | `disabled` | `boolean` | `false` | Disables every control and dims the panel |
 | `mode` | `'inline' \| 'popover'` | `'inline'` | Always-visible panel, or input that opens the panel |
 | `previewCount` | `number` | `5` | How many upcoming execution dates to list |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | Palette for this instance — `auto` follows the `html.dark` convention. See [Theming](/guide/theming) |
+| `primaryColor` | `string` | — | Custom primary colour (any CSS colour); derived hover/tint/border tokens are generated automatically |
 | `cols` | `Partial<Record<string, number>>` | — | Override the grid column count per field |
 
 ### Default column counts

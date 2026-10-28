@@ -4,6 +4,9 @@
 ES module plus a UMD bundle, with all styles compiled into a single CSS file — no
 UI framework, no CSS preprocessor and no runtime CSS-in-JS required on your side.
 
+The JavaScript entry does **not** inject any CSS. Import
+`vue3-cron-selector/style.css` once in your application.
+
 ## Installation
 
 ```bash

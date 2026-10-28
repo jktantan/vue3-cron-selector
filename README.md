@@ -70,6 +70,8 @@ app.use(Vue3CronSelector)
 | `disabled` | `boolean` | `false` | Disable all interaction |
 | `mode` | `'inline' \| 'popover'` | `'inline'` | Display as always-visible panel or input-triggered popover |
 | `previewCount` | `number` | `5` | Number of upcoming execution dates to show |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | Palette for this instance — `auto` follows the `html.dark` convention |
+| `primaryColor` | `string` | — | Custom primary colour (any CSS colour). Derived hover/tint/border tokens are generated automatically |
 | `cols` | `Partial<Record<string, number>>` | — | Override grid column count per field |
 
 ### Default Column Counts
@@ -202,7 +204,10 @@ See the [i18n guide](https://jktantan.github.io/vue3-cron-selector/guide/i18n) f
 
 ## Theming
 
-All visual properties are CSS custom properties on `:root`, so you can override them without touching the library:
+The styles are aligned with Element Plus: every `--cron-*` token resolves to the
+matching `--el-*` variable first and only falls back to a built-in default, so
+the selector follows your Element Plus theme colour, typography and dark mode
+automatically. Override tokens globally or per container:
 
 ```css
 :root {
@@ -212,7 +217,35 @@ All visual properties are CSS custom properties on `:root`, so you can override 
 }
 ```
 
-See the [Theming guide](https://jktantan.github.io/vue3-cron-selector/guide/theming) for the full variable reference and a dark-theme example.
+Light and dark palettes are built in. `theme="auto"` (the default) follows the
+`html.dark` convention used by Element Plus; `theme="light"` / `theme="dark"`
+pin the palette for a single instance. Set `primaryColor` to any CSS colour and
+the hover, tint and border shades are derived automatically.
+
+```vue
+<CronSelector v-model="cron" theme="dark" />
+<CronSelector v-model="cron" primary-color="#16a34a" />
+```
+
+Styles are a separate entry point and are **not** injected by the JS bundle:
+
+```ts
+import 'vue3-cron-selector/style.css'
+```
+
+Every element also carries a stable BEM class from the single `cron-selector`
+block (for example `.cron-selector__cell--selected`), so a third-party
+stylesheet can restyle any part directly:
+
+```css
+.my-scheduler .cron-selector__cell--selected {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+```
+
+See the [Theming guide](https://jktantan.github.io/vue3-cron-selector/guide/theming)
+for the full token reference, dark-mode setup and the complete BEM class list.
 
 ## TypeScript
 
@@ -326,6 +359,8 @@ app.use(Vue3CronSelector)
 | `disabled` | `boolean` | `false` | 禁用全部交互 |
 | `mode` | `'inline' \| 'popover'` | `'inline'` | 内联面板或输入框触发的弹出面板 |
 | `previewCount` | `number` | `5` | 展示的后续执行时间数量 |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | 当前实例的色调：`auto` 跟随 `html.dark` 约定 |
+| `primaryColor` | `string` | — | 自定义主色（任意 CSS 颜色），自动生成 hover/浅色/边框派生色 |
 | `cols` | `Partial<Record<string, number>>` | — | 按字段覆盖网格列数 |
 
 ### 默认列数
@@ -458,7 +493,9 @@ import type { LocaleDefinition } from 'vue3-cron-selector'
 
 ## 主题定制
 
-全部视觉属性都是 `:root` 上的 CSS 自定义属性，无需改动库源码即可覆盖：
+样式以 Element Plus 为基础对齐：每个 `--cron-*` 令牌优先解析为对应的 `--el-*` 变量，
+仅在不存在时才使用内置默认值，因此选择器会自动跟随 Element Plus 的主题色、字体与暗色
+模式。可在全局或容器级覆盖令牌：
 
 ```css
 :root {
@@ -468,7 +505,32 @@ import type { LocaleDefinition } from 'vue3-cron-selector'
 }
 ```
 
-完整的变量清单与暗色主题示例见[主题定制指南](https://jktantan.github.io/vue3-cron-selector/zh/guide/theming)。
+组件内置浅色与深色两套色调。`theme="auto"`（默认）跟随 Element Plus 使用的
+`html.dark` 约定；`theme="light"` / `theme="dark"` 可为单个实例锁定色调。
+`primaryColor` 接受任意 CSS 颜色，hover、浅色底与边框派生色会自动生成。
+
+```vue
+<CronSelector v-model="cron" theme="dark" />
+<CronSelector v-model="cron" primary-color="#16a34a" />
+```
+
+样式是独立入口，JS bundle **不会**自动注入：
+
+```ts
+import 'vue3-cron-selector/style.css'
+```
+
+所有元素都带有单一 `cron-selector` Block 下的稳定 BEM 类名（例如
+`.cron-selector__cell--selected`），第三方样式表可以直接覆盖任意部分：
+
+```css
+.my-scheduler .cron-selector__cell--selected {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+```
+
+完整的令牌清单、暗色模式接入方式与 BEM 类名列表见[主题定制指南](https://jktantan.github.io/vue3-cron-selector/zh/guide/theming)。
 
 ## TypeScript 支持
 

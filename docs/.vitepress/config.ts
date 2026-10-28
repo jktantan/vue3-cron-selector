@@ -27,6 +27,8 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
+        // Demo pages load the same standalone stylesheet a consumer would use.
+        'vue3-cron-selector/style.css': resolve(repoRoot, 'src/lib/theme/index.scss'),
         // Demo pages import the real component straight from source, so the
         // site always documents the code that is actually in the repository.
         'vue3-cron-selector': resolve(repoRoot, 'src/lib/index.ts'),

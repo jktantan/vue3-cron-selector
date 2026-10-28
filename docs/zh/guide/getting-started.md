@@ -4,6 +4,9 @@
 UMD 两种格式发布，全部样式编译进单个 CSS 文件 —— 你的项目里不需要 UI 框架、不需要
 CSS 预处理器，也不需要运行时 CSS-in-JS。
 
+JavaScript 入口**不会**自动注入任何 CSS，请在应用中单独引入一次
+`vue3-cron-selector/style.css`。
+
 ## 安装
 
 ```bash

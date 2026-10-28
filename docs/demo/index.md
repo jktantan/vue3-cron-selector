@@ -14,6 +14,7 @@ Chinese — that is the same `locale` prop you would bind in your own app.
 <script setup>
 import { ref } from 'vue'
 import { CronSelector } from 'vue3-cron-selector'
+import 'vue3-cron-selector/style.css'
 
 const crontabValue = ref('*/5 * * * *')
 const quartzValue = ref('0 0 9 * * ? *')
@@ -23,12 +24,34 @@ const columnsValue = ref('0 0 * * *')
 
 const locale = ref('en')
 const disabled = ref(false)
+const theme = ref('auto')
+const primaryColor = ref('')
+
+function onPrimaryColorInput(event) {
+  primaryColor.value = event.target.value
+}
 </script>
 
 <div class="demo-toolbar">
   <button type="button" @click="locale = locale === 'en' ? 'zh' : 'en'">
     Locale: {{ locale }}
   </button>
+  <label>
+    <select v-model="theme">
+      <option value="auto">Theme: auto</option>
+      <option value="light">Theme: light</option>
+      <option value="dark">Theme: dark</option>
+    </select>
+  </label>
+  <label>
+    <input
+      type="color"
+      :value="primaryColor || '#409eff'"
+      @input="onPrimaryColorInput"
+    />
+    Colour
+  </label>
+  <button type="button" @click="primaryColor = ''">Reset colour</button>
   <label>
     <input v-model="disabled" type="checkbox" />
     Disabled
@@ -43,7 +66,7 @@ const disabled = ref(false)
       v-model="crontabValue"
       format="crontab"
       :locale="locale"
-      :disabled="disabled"
+      :disabled="disabled" :theme="theme" :primary-color="primaryColor"
     />
   </div>
   <p class="demo-value">v-model: <code>{{ crontabValue }}</code></p>
@@ -53,7 +76,7 @@ const disabled = ref(false)
 
 <ClientOnly>
   <div class="demo-block">
-    <CronSelector v-model="quartzValue" format="quartz" :locale="locale" :disabled="disabled" />
+    <CronSelector v-model="quartzValue" format="quartz" :locale="locale" :disabled="disabled" :theme="theme" :primary-color="primaryColor" />
   </div>
   <p class="demo-value">v-model: <code>{{ quartzValue }}</code></p>
 </ClientOnly>
@@ -62,7 +85,7 @@ const disabled = ref(false)
 
 <ClientOnly>
   <div class="demo-block">
-    <CronSelector v-model="springValue" format="spring" :locale="locale" :disabled="disabled" />
+    <CronSelector v-model="springValue" format="spring" :locale="locale" :disabled="disabled" :theme="theme" :primary-color="primaryColor" />
   </div>
   <p class="demo-value">v-model: <code>{{ springValue }}</code></p>
 </ClientOnly>
@@ -76,7 +99,7 @@ const disabled = ref(false)
       format="crontab"
       mode="popover"
       :locale="locale"
-      :disabled="disabled"
+      :disabled="disabled" :theme="theme" :primary-color="primaryColor"
     />
   </div>
   <p class="demo-value">v-model: <code>{{ popoverValue }}</code></p>
@@ -93,7 +116,7 @@ columns and `hour` gets 4 instead of the defaults.
       v-model="columnsValue"
       format="crontab"
       :locale="locale"
-      :disabled="disabled"
+      :disabled="disabled" :theme="theme" :primary-color="primaryColor"
       :cols="{ minute: 6, hour: 4 }"
     />
   </div>

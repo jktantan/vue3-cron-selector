@@ -13,6 +13,7 @@ title: 在线演示
 <script setup>
 import { ref } from 'vue'
 import { CronSelector } from 'vue3-cron-selector'
+import 'vue3-cron-selector/style.css'
 
 const crontabValue = ref('*/5 * * * *')
 const quartzValue = ref('0 0 9 * * ? *')
@@ -22,12 +23,34 @@ const columnsValue = ref('0 0 * * *')
 
 const locale = ref('zh')
 const disabled = ref(false)
+const theme = ref('auto')
+const primaryColor = ref('')
+
+function onPrimaryColorInput(event) {
+  primaryColor.value = event.target.value
+}
 </script>
 
 <div class="demo-toolbar">
   <button type="button" @click="locale = locale === 'zh' ? 'en' : 'zh'">
     语言：{{ locale }}
   </button>
+  <label>
+    <select v-model="theme">
+      <option value="auto">主题：跟随</option>
+      <option value="light">主题：浅色</option>
+      <option value="dark">主题：深色</option>
+    </select>
+  </label>
+  <label>
+    <input
+      type="color"
+      :value="primaryColor || '#409eff'"
+      @input="onPrimaryColorInput"
+    />
+    主色
+  </label>
+  <button type="button" @click="primaryColor = ''">恢复默认色</button>
   <label>
     <input v-model="disabled" type="checkbox" />
     禁用
@@ -42,7 +65,7 @@ const disabled = ref(false)
       v-model="crontabValue"
       format="crontab"
       :locale="locale"
-      :disabled="disabled"
+      :disabled="disabled" :theme="theme" :primary-color="primaryColor"
     />
   </div>
   <p class="demo-value">v-model：<code>{{ crontabValue }}</code></p>
@@ -52,7 +75,7 @@ const disabled = ref(false)
 
 <ClientOnly>
   <div class="demo-block">
-    <CronSelector v-model="quartzValue" format="quartz" :locale="locale" :disabled="disabled" />
+    <CronSelector v-model="quartzValue" format="quartz" :locale="locale" :disabled="disabled" :theme="theme" :primary-color="primaryColor" />
   </div>
   <p class="demo-value">v-model：<code>{{ quartzValue }}</code></p>
 </ClientOnly>
@@ -61,7 +84,7 @@ const disabled = ref(false)
 
 <ClientOnly>
   <div class="demo-block">
-    <CronSelector v-model="springValue" format="spring" :locale="locale" :disabled="disabled" />
+    <CronSelector v-model="springValue" format="spring" :locale="locale" :disabled="disabled" :theme="theme" :primary-color="primaryColor" />
   </div>
   <p class="demo-value">v-model：<code>{{ springValue }}</code></p>
 </ClientOnly>
@@ -75,7 +98,7 @@ const disabled = ref(false)
       format="crontab"
       mode="popover"
       :locale="locale"
-      :disabled="disabled"
+      :disabled="disabled" :theme="theme" :primary-color="primaryColor"
     />
   </div>
   <p class="demo-value">v-model：<code>{{ popoverValue }}</code></p>
@@ -92,7 +115,7 @@ const disabled = ref(false)
       v-model="columnsValue"
       format="crontab"
       :locale="locale"
-      :disabled="disabled"
+      :disabled="disabled" :theme="theme" :primary-color="primaryColor"
       :cols="{ minute: 6, hour: 4 }"
     />
   </div>
