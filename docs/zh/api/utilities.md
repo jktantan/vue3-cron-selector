@@ -23,7 +23,7 @@ import {
 | `segmentsToString` | `(segments: ReadonlyMap<string, Segment>, format: CronFormat) => string` | 按该格式的字段顺序把段映射序列化回表达式。 |
 | `getFormatConfig` | `(format: CronFormat) => FormatConfig` | 取得某方言的字段顺序、字段定义与默认表达式。 |
 | `generateDescription` | `(parsed: ParsedCron, locale: LocaleDefinition) => string` | 为已解析的表达式生成人类可读描述。 |
-| `resolveLocale` | `(code: string) => LocaleDefinition` | 查找内置语言：先精确匹配，再退回基础语言（`zh-CN` → `zh`），最后退回英文。 |
+| `resolveLocale` | `(code: string) => LocaleDefinition` | 查找内置语言：先精确匹配，再退回基础语言，最后退回英文。区域标签会保留在 `code` 中（如 `zh-TW`），供 Intl 使用。 |
 | `getFieldValueLabel` | `(fieldId: string, value: number, locale: LocaleDefinition) => string` | 取得字段取值的显示标签：月份名、星期名，或补零后的数字。 |
 
 ## 完整示例
@@ -51,7 +51,7 @@ if (parsed.error) {
 两种内置语言也直接导出，便于在它们的基础上派生自定义语言：
 
 ```ts
-import { EN_LOCALE, ZH_LOCALE } from 'vue3-cron-selector'
+import { EN_US_LOCALE, ZH_CN_LOCALE } from 'vue3-cron-selector'
 ```
 
 ## 其他具名导出

@@ -14,7 +14,7 @@
           :checked="activeOption === 'everyDay'"
           @change="selectOption('everyDay')"
         />
-        <span class="cron-selector__option-text">{{ locale.ui.everyDay }}</span>
+        <span class="cron-selector__option-text">{{ locale.templates.day.everyDay }}</span>
       </label>
 
       <!-- 2. Every N day(s) starting at D of the month (step) -->
@@ -66,7 +66,7 @@
           :checked="activeOption === 'specificDow'"
           @change="selectOption('specificDow')"
         />
-        <span class="cron-selector__option-text">{{ locale.ui.specificDayOfWeek }}</span>
+        <span class="cron-selector__option-text">{{ locale.templates.day.specificDayOfWeek }}</span>
       </label>
       <div v-if="activeOption === 'specificDow'" class="cron-selector__sub-content">
         <FieldGrid
@@ -91,7 +91,9 @@
           :checked="activeOption === 'specificDom'"
           @change="selectOption('specificDom')"
         />
-        <span class="cron-selector__option-text">{{ locale.ui.specificDayOfMonth }}</span>
+        <span class="cron-selector__option-text">{{
+          locale.templates.day.specificDayOfMonth
+        }}</span>
       </label>
       <div v-if="activeOption === 'specificDom'" class="cron-selector__sub-content">
         <FieldGrid
@@ -123,23 +125,25 @@
             :checked="activeOption === 'lastDay'"
             @change="selectOption('lastDay')"
           />
-          <span class="cron-selector__option-text">{{ locale.ui.lastDayOfMonth }}</span>
+          <span class="cron-selector__option-text">{{ locale.templates.day.lastDayOfMonth }}</span>
         </label>
 
-        <!-- 6. On the last weekday of the month -->
+        <!-- 6. On the last business day of the month -->
         <label
           class="cron-selector__option"
-          :class="{ 'cron-selector__option--active': activeOption === 'lastWeekday' }"
+          :class="{ 'cron-selector__option--active': activeOption === 'lastBusinessDay' }"
         >
           <input
             type="radio"
             :disabled="disabled"
             :name="radioGroupName"
-            value="lastWeekday"
-            :checked="activeOption === 'lastWeekday'"
-            @change="selectOption('lastWeekday')"
+            value="lastBusinessDay"
+            :checked="activeOption === 'lastBusinessDay'"
+            @change="selectOption('lastBusinessDay')"
           />
-          <span class="cron-selector__option-text">{{ locale.ui.lastWeekdayOfMonth }}</span>
+          <span class="cron-selector__option-text">{{
+            locale.templates.day.lastBusinessDayOfMonth
+          }}</span>
         </label>
 
         <!-- 7. On the last [weekday] of the month -->
@@ -269,7 +273,7 @@ import type { FieldItem, CronFormat, FieldDefinition } from '../core/types'
 import type { UseCronSegmentReturn } from '../composables/useCronSegment'
 import type { LocaleDefinition } from '../locale/types'
 import { FieldWrapper } from '../core/fields'
-import { getFieldValueLabel } from '../locale/engine'
+import { getFieldValueLabel, pluralUnit } from '../locale/engine'
 import { parseLocaleTemplate, compactTemplateParts } from '../locale/template'
 import { DAY_OF_MONTH_FIELD, DAY_OF_WEEK_FIELD } from '../core/fields'
 import FieldGrid from './FieldGrid.vue'
@@ -282,7 +286,7 @@ type DayOption =
   | 'specificDow'
   | 'specificDom'
   | 'lastDay'
-  | 'lastWeekday'
+  | 'lastBusinessDay'
   | 'lastWeekdayOfMonth'
   | 'lastDayOffset'
   | 'nearestWeekday'
@@ -335,7 +339,7 @@ const weekdaySelectItems = computed<ReadonlyArray<FieldItem>>(() =>
 )
 
 const ordinalSelectItems = computed<ReadonlyArray<FieldItem>>(() =>
-  props.locale.ui.ordinals.map((label, idx) => ({ value: idx + 1, label })),
+  props.locale.ordinals.map((label, idx) => ({ value: idx + 1, label })),
 )
 
 const domSelected = computed<ReadonlyArray<number>>(() => [...props.domSegment.selected.value])
@@ -345,19 +349,27 @@ const dowSelected = computed<ReadonlyArray<number>>(() => [...props.dowSegment.s
 // text inline and put the spinners/selects where the placeholders sit, so the
 // word order stays correct in every language.
 const dayStepTemplateParts = computed(() =>
-  compactTemplateParts(parseLocaleTemplate(props.locale.ui.everyNDaysStartingAt)),
+  compactTemplateParts(
+    parseLocaleTemplate(props.locale.templates.day.everyNStartingAt, {
+      unit: pluralUnit('dayOfMonth', stepValue.value, props.locale),
+    }),
+  ),
 )
 const lastWeekdayTemplateParts = computed(() =>
-  compactTemplateParts(parseLocaleTemplate(props.locale.ui.lastSpecificWeekdayOfMonth)),
+  compactTemplateParts(parseLocaleTemplate(props.locale.templates.day.lastWeekdayOfMonth)),
 )
 const lastDayOffsetTemplateParts = computed(() =>
-  compactTemplateParts(parseLocaleTemplate(props.locale.ui.daysBeforeEndOfMonth)),
+  compactTemplateParts(
+    parseLocaleTemplate(props.locale.templates.day.daysBeforeEndOfMonth, {
+      unit: pluralUnit('dayOfMonth', lastDayOffsetValue.value, props.locale),
+    }),
+  ),
 )
 const nearestWeekdayTemplateParts = computed(() =>
-  compactTemplateParts(parseLocaleTemplate(props.locale.ui.nearestWeekdayTo)),
+  compactTemplateParts(parseLocaleTemplate(props.locale.templates.day.nearestWeekdayTo)),
 )
 const nthWeekdayTemplateParts = computed(() =>
-  compactTemplateParts(parseLocaleTemplate(props.locale.ui.nthWeekdayOfMonth)),
+  compactTemplateParts(parseLocaleTemplate(props.locale.templates.day.nthWeekdayOfMonth)),
 )
 
 function detectActiveOption(): DayOption {
@@ -366,7 +378,7 @@ function detectActiveOption(): DayOption {
 
   if (domSeg.type === 'lastDay' && domSeg.offset > 0) return 'lastDayOffset'
   if (domSeg.type === 'lastDay') return 'lastDay'
-  if (domSeg.type === 'lastWeekday') return 'lastWeekday'
+  if (domSeg.type === 'lastBusinessDay') return 'lastBusinessDay'
   if (domSeg.type === 'nearestWeekday') return 'nearestWeekday'
   if (dowSeg.type === 'lastWeekdayOfMonth') return 'lastWeekdayOfMonth'
   if (dowSeg.type === 'nthWeekday') return 'nthWeekday'
@@ -403,7 +415,7 @@ const isCrontab = computed(() => props.format === 'crontab')
 // fall back to "every day" if the current expression somehow depends on them.
 const QUARTZ_ONLY_OPTIONS: ReadonlySet<DayOption> = new Set<DayOption>([
   'lastDay',
-  'lastWeekday',
+  'lastBusinessDay',
   'lastWeekdayOfMonth',
   'lastDayOffset',
   'nearestWeekday',
@@ -504,8 +516,8 @@ function selectOption(option: DayOption): void {
         props.domSegment.setType('lastDay')
         setDowNoSpecific()
         break
-      case 'lastWeekday':
-        props.domSegment.setType('lastWeekday')
+      case 'lastBusinessDay':
+        props.domSegment.setType('lastBusinessDay')
         setDowNoSpecific()
         break
       case 'lastWeekdayOfMonth':

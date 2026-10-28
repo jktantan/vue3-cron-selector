@@ -37,7 +37,7 @@ const emit = defineEmits<{
 }>()
 
 function tabLabel(fieldId: string): string {
-  return props.locale.tabLabels?.[fieldId] ?? props.locale.fieldLabels[fieldId] ?? fieldId
+  return props.locale.fields.tabs[fieldId] ?? props.locale.fields.labels[fieldId] ?? fieldId
 }
 
 function onKeydown(event: KeyboardEvent, index: number): void {

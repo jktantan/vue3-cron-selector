@@ -6,7 +6,7 @@ import type { CronTheme } from '../lib/index'
 const cronValue = ref('*/5 * * * *')
 const quartzValue = ref('0 0 9 * * ? *')
 const popoverValue = ref('0 12 * * *')
-const locale = ref<'en' | 'zh'>('en')
+const locale = ref<'en-US' | 'zh-CN'>('en-US')
 const disabled = ref(false)
 const theme = ref<CronTheme>('auto')
 const primaryColor = ref('')
@@ -22,7 +22,7 @@ watchEffect(() => {
 })
 
 function toggleLocale(): void {
-  locale.value = locale.value === 'en' ? 'zh' : 'en'
+  locale.value = locale.value === 'en-US' ? 'zh-CN' : 'en-US'
 }
 </script>
 

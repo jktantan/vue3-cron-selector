@@ -21,7 +21,7 @@ const springValue = ref('0 */30 9-17 * * MON-FRI')
 const popoverValue = ref('0 12 * * *')
 const columnsValue = ref('0 0 * * *')
 
-const locale = ref('zh')
+const locale = ref('zh-CN')
 const disabled = ref(false)
 const theme = ref('auto')
 const primaryColor = ref('')
@@ -32,7 +32,7 @@ function onPrimaryColorInput(event) {
 </script>
 
 <div class="demo-toolbar">
-  <button type="button" @click="locale = locale === 'zh' ? 'en' : 'zh'">
+  <button type="button" @click="locale = locale === 'zh-CN' ? 'en-US' : 'zh-CN'">
     语言：{{ locale }}
   </button>
   <label>

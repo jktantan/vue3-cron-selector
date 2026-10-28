@@ -10,7 +10,7 @@ export type SegmentType =
   | 'combined'
   | 'noSpecific'
   | 'lastDay'
-  | 'lastWeekday'
+  | 'lastBusinessDay'
   | 'nearestWeekday'
   | 'lastWeekdayOfMonth'
   | 'nthWeekday'
@@ -57,8 +57,8 @@ export interface LastDaySegment extends BaseSegment {
   readonly offset: number
 }
 
-export interface LastWeekdaySegment extends BaseSegment {
-  readonly type: 'lastWeekday'
+export interface LastBusinessDaySegment extends BaseSegment {
+  readonly type: 'lastBusinessDay'
 }
 
 export interface NearestWeekdaySegment extends BaseSegment {
@@ -85,7 +85,7 @@ export type Segment =
   | CombinedSegment
   | NoSpecificSegment
   | LastDaySegment
-  | LastWeekdaySegment
+  | LastBusinessDaySegment
   | NearestWeekdaySegment
   | LastWeekdayOfMonthSegment
   | NthWeekdaySegment

@@ -66,7 +66,7 @@ app.use(Vue3CronSelector)
 |------|------|---------|-------------|
 | `modelValue` | `string` | `''` | Cron expression, use with `v-model` |
 | `format` | `'crontab' \| 'quartz' \| 'spring'` | `'crontab'` | Cron dialect |
-| `locale` | `string \| LocaleDefinition` | `'en'` | Locale code (`'en'`, `'zh'`) or custom locale object |
+| `locale` | `string \| LocaleDefinition` | `'en-US'` | Locale code (`'en-US'`, `'zh-CN'`; `'en'`/`'zh'` are aliases) or custom locale object |
 | `disabled` | `boolean` | `false` | Disable all interaction |
 | `mode` | `'inline' \| 'popover'` | `'inline'` | Display as always-visible panel or input-triggered popover |
 | `previewCount` | `number` | `5` | Number of upcoming execution dates to show |
@@ -157,7 +157,7 @@ app.use(Vue3CronSelector)
 <CronSelector v-model="cron" mode="popover" />
 
 <!-- Chinese locale -->
-<CronSelector v-model="cron" locale="zh" />
+<CronSelector v-model="cron" locale="zh-CN" />
 
 <!-- Custom grid columns -->
 <CronSelector v-model="cron" :cols="{ minute: 6, hour: 4 }" />
@@ -183,7 +183,7 @@ const {
   error,          // ComputedRef<string | null>
   setCronString,  // (value: string) => void
   reset,          // () => void — resets to format default
-} = useCron({ modelValue: '*/5 * * * *', format: 'crontab', locale: 'en', previewCount: 5 })
+} = useCron({ modelValue: '*/5 * * * *', format: 'crontab', locale: 'en-US', previewCount: 5 })
 ```
 
 See the [Composables guide](https://jktantan.github.io/vue3-cron-selector/guide/composables) for the full `useCronSegment` API.
@@ -193,14 +193,19 @@ See the [Composables guide](https://jktantan.github.io/vue3-cron-selector/guide/
 Built-in locales: `'en'` (English) and `'zh'` (中文). Pass a full `LocaleDefinition` object for custom languages:
 
 ```vue
-<CronSelector v-model="cron" locale="zh" />
+<CronSelector v-model="cron" locale="zh-CN" />
 ```
 
 ```ts
 import type { LocaleDefinition } from 'vue3-cron-selector'
 ```
 
-See the [i18n guide](https://jktantan.github.io/vue3-cron-selector/guide/i18n) for the complete `LocaleDefinition` interface and a custom-locale example.
+Every sentence is a locale template: the language pack owns word order,
+punctuation and plural forms (chosen with `Intl.PluralRules`). A regional code
+such as `'zh-TW'` is kept for `Intl` formatting while the copy falls back to
+`zh`.
+
+See the [i18n guide](https://jktantan.github.io/vue3-cron-selector/guide/i18n) for the complete `LocaleDefinition` interface, the token list and the 0.2 → 0.3 migration table.
 
 ## Theming
 
@@ -355,7 +360,7 @@ app.use(Vue3CronSelector)
 |------|------|--------|------|
 | `modelValue` | `string` | `''` | Cron 表达式，配合 `v-model` 使用 |
 | `format` | `'crontab' \| 'quartz' \| 'spring'` | `'crontab'` | Cron 方言 |
-| `locale` | `string \| LocaleDefinition` | `'en'` | 语言代码（`'en'`、`'zh'`）或自定义语言对象 |
+| `locale` | `string \| LocaleDefinition` | `'en-US'` | 语言代码（`'en-US'`、`'zh-CN'`；`'en'`/`'zh'` 为别名）或自定义语言对象 |
 | `disabled` | `boolean` | `false` | 禁用全部交互 |
 | `mode` | `'inline' \| 'popover'` | `'inline'` | 内联面板或输入框触发的弹出面板 |
 | `previewCount` | `number` | `5` | 展示的后续执行时间数量 |
@@ -446,7 +451,7 @@ app.use(Vue3CronSelector)
 <CronSelector v-model="cron" mode="popover" />
 
 <!-- 中文界面 -->
-<CronSelector v-model="cron" locale="zh" />
+<CronSelector v-model="cron" locale="zh-CN" />
 
 <!-- 自定义网格列数 -->
 <CronSelector v-model="cron" :cols="{ minute: 6, hour: 4 }" />
@@ -472,7 +477,7 @@ const {
   error,          // ComputedRef<string | null>
   setCronString,  // (value: string) => void
   reset,          // () => void — 重置为格式默认值
-} = useCron({ modelValue: '*/5 * * * *', format: 'crontab', locale: 'en', previewCount: 5 })
+} = useCron({ modelValue: '*/5 * * * *', format: 'crontab', locale: 'en-US', previewCount: 5 })
 ```
 
 `useCronSegment` 的完整 API 见[组合式函数指南](https://jktantan.github.io/vue3-cron-selector/zh/guide/composables)。
@@ -482,14 +487,18 @@ const {
 内置语言包：`'en'`（英文）和 `'zh'`（中文）。传入完整的 `LocaleDefinition` 对象即可自定义语言：
 
 ```vue
-<CronSelector v-model="cron" locale="zh" />
+<CronSelector v-model="cron" locale="zh-CN" />
 ```
 
 ```ts
 import type { LocaleDefinition } from 'vue3-cron-selector'
 ```
 
-完整的 `LocaleDefinition` 接口定义与自定义语言示例见[国际化指南](https://jktantan.github.io/vue3-cron-selector/zh/guide/i18n)。
+每个句子都是语言包中的模板：词序、标点与复数词形都由语言包决定，复数通过
+`Intl.PluralRules` 选择。`'zh-TW'` 这类区域代码会保留给 `Intl` 格式化，文案则
+回退到基础语言 `zh`。
+
+完整的 `LocaleDefinition` 接口、token 列表与 0.2 → 0.3 迁移表见[国际化指南](https://jktantan.github.io/vue3-cron-selector/zh/guide/i18n)。
 
 ## 主题定制
 

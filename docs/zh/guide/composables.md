@@ -24,7 +24,7 @@ const {
 } = useCron({
   modelValue: '*/5 * * * *', // 字符串或 Ref<string>
   format: 'crontab',         // CronFormat 或 Ref<CronFormat>
-  locale: 'en',              // 字符串、LocaleDefinition，或二者的 Ref
+  locale: 'en-US',              // 字符串、LocaleDefinition，或二者的 Ref
   previewCount: 5,           // number 或 Ref<number>
 })
 ```
@@ -38,7 +38,7 @@ const {
 |------|------|--------|
 | `modelValue` | `string \| Ref<string>` | 该格式的默认表达式 |
 | `format` | `CronFormat \| Ref<CronFormat>` | `'crontab'` |
-| `locale` | `string \| LocaleDefinition \| Ref<...>` | `'en'` |
+| `locale` | `string \| LocaleDefinition \| Ref<...>` | `'en-US'` |
 | `previewCount` | `number \| Ref<number>` | `5` |
 
 ### `UseCronReturn`
@@ -85,10 +85,10 @@ const {
 `setType` 可把字段切换为库支持的任一种段类型：
 
 `'any'` · `'value'` · `'range'` · `'step'` · `'combined'` · `'noSpecific'` ·
-`'lastDay'` · `'lastWeekday'` · `'nearestWeekday'` · `'lastWeekdayOfMonth'` ·
+`'lastDay'` · `'lastBusinessDay'` · `'nearestWeekday'` · `'lastWeekdayOfMonth'` ·
 `'nthWeekday'`
 
-其中 `lastDay`、`lastWeekday`、`nearestWeekday`、`lastWeekdayOfMonth`、
+其中 `lastDay`、`lastBusinessDay`、`nearestWeekday`、`lastWeekdayOfMonth`、
 `nthWeekday` 为 Quartz 专有，在 crontab 模式下会被隐藏。
 
 ## 构建一个最小编辑器
@@ -100,7 +100,7 @@ import { useCron } from 'vue3-cron-selector'
 
 const { cronString, description, nextExecutions, isValid } = useCron({
   modelValue: ref('0 9 * * 1-5'),
-  locale: 'zh',
+  locale: 'zh-CN',
 })
 
 const draft = ref(cronString.value)

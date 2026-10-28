@@ -24,7 +24,7 @@ import {
 | `segmentsToString` | `(segments: ReadonlyMap<string, Segment>, format: CronFormat) => string` | Serialise a segment map back to an expression in the field order of the format. |
 | `getFormatConfig` | `(format: CronFormat) => FormatConfig` | Field order, field definitions and the default expression for a dialect. |
 | `generateDescription` | `(parsed: ParsedCron, locale: LocaleDefinition) => string` | Build the human-readable sentence for a parsed expression. |
-| `resolveLocale` | `(code: string) => LocaleDefinition` | Look up a built-in locale. Falls back to the base language (`zh-CN` → `zh`), then to English. |
+| `resolveLocale` | `(code: string) => LocaleDefinition` | Look up a built-in locale. A regional tag is kept in `code` (`zh-TW`) while the copy falls back to the base language, then to English. |
 | `getFieldValueLabel` | `(fieldId: string, value: number, locale: LocaleDefinition) => string` | Display label for a value in a field: month names, weekday names, or a zero-padded number. |
 
 ## Worked example
@@ -53,7 +53,7 @@ The two built-in locales are also exported directly, which is useful when you wa
 to derive a custom locale from one of them:
 
 ```ts
-import { EN_LOCALE, ZH_LOCALE } from 'vue3-cron-selector'
+import { EN_US_LOCALE, ZH_CN_LOCALE } from 'vue3-cron-selector'
 ```
 
 ## Other named exports

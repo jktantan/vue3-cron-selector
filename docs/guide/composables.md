@@ -25,7 +25,7 @@ const {
 } = useCron({
   modelValue: '*/5 * * * *', // string or Ref<string>
   format: 'crontab',         // CronFormat or Ref<CronFormat>
-  locale: 'en',              // string, LocaleDefinition, or a Ref of either
+  locale: 'en-US',              // string, LocaleDefinition, or a Ref of either
   previewCount: 5,           // number or Ref<number>
 })
 ```
@@ -39,7 +39,7 @@ reactive when they are bound to your own state.
 |--------|------|---------|
 | `modelValue` | `string \| Ref<string>` | format default expression |
 | `format` | `CronFormat \| Ref<CronFormat>` | `'crontab'` |
-| `locale` | `string \| LocaleDefinition \| Ref<...>` | `'en'` |
+| `locale` | `string \| LocaleDefinition \| Ref<...>` | `'en-US'` |
 | `previewCount` | `number \| Ref<number>` | `5` |
 
 ### `UseCronReturn`
@@ -88,10 +88,10 @@ const {
 `setType` switches the field to one of the segment kinds the library understands:
 
 `'any'` · `'value'` · `'range'` · `'step'` · `'combined'` · `'noSpecific'` ·
-`'lastDay'` · `'lastWeekday'` · `'nearestWeekday'` · `'lastWeekdayOfMonth'` ·
+`'lastDay'` · `'lastBusinessDay'` · `'nearestWeekday'` · `'lastWeekdayOfMonth'` ·
 `'nthWeekday'`
 
-The `lastDay`, `lastWeekday`, `nearestWeekday`, `lastWeekdayOfMonth` and
+The `lastDay`, `lastBusinessDay`, `nearestWeekday`, `lastWeekdayOfMonth` and
 `nthWeekday` kinds are Quartz-only and are hidden in crontab mode.
 
 ## Building a minimal editor
@@ -103,7 +103,7 @@ import { useCron } from 'vue3-cron-selector'
 
 const { cronString, description, nextExecutions, isValid } = useCron({
   modelValue: ref('0 9 * * 1-5'),
-  locale: 'en',
+  locale: 'en-US',
 })
 
 const draft = ref(cronString.value)

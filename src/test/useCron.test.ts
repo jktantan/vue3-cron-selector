@@ -144,8 +144,8 @@ describe('useCron', () => {
       const nearestWeekday = useCron({ modelValue: '0 0 0 15W * ? *', format: 'quartz' })
       expect(nearestWeekday.nextExecutions.value[0]?.getDate()).toBe(15)
 
-      const lastWeekday = useCron({ modelValue: '0 0 0 LW * ? *', format: 'quartz' })
-      expect(lastWeekday.nextExecutions.value[0]?.getDate()).toBe(30)
+      const lastBusinessDay = useCron({ modelValue: '0 0 0 LW * ? *', format: 'quartz' })
+      expect(lastBusinessDay.nextExecutions.value[0]?.getDate()).toBe(30)
 
       const offset = useCron({ modelValue: '0 0 0 L-3 * ? *', format: 'quartz' })
       expect(offset.nextExecutions.value[0]?.getDate()).toBe(28)

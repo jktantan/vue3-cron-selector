@@ -8,7 +8,7 @@ import {
   createValueSegment,
   createNoSpecificSegment,
   createLastDaySegment,
-  createLastWeekdaySegment,
+  createLastBusinessDaySegment,
   createNearestWeekdaySegment,
   createLastWeekdayOfMonthSegment,
   createNthWeekdaySegment,
@@ -134,8 +134,8 @@ export function useCronSegment(options: UseCronSegmentOptions): UseCronSegmentRe
       case 'lastDay':
         segment.value = createLastDaySegment(0)
         break
-      case 'lastWeekday':
-        segment.value = createLastWeekdaySegment()
+      case 'lastBusinessDay':
+        segment.value = createLastBusinessDaySegment()
         break
       case 'nearestWeekday':
         segment.value = createNearestWeekdaySegment(1)

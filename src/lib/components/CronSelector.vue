@@ -74,7 +74,7 @@ const props = withDefaults(
   {
     modelValue: '',
     format: 'crontab',
-    locale: 'en',
+    locale: 'en-US',
     disabled: false,
     cols: () => ({}),
     previewCount: 5,

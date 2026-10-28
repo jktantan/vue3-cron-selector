@@ -6,7 +6,7 @@
 |------|------|---------|-------------|
 | `modelValue` | `string` | `''` | Cron expression, use with `v-model` |
 | `format` | `'crontab' \| 'quartz' \| 'spring'` | `'crontab'` | Cron dialect — see [Formats](/guide/formats) |
-| `locale` | `string \| LocaleDefinition` | `'en'` | Locale code (`'en'`, `'zh'`) or a custom locale object |
+| `locale` | `string \| LocaleDefinition` | `'en-US'` | Locale code (`'en-US'`, `'zh-CN'`; `'en'`/`'zh'` are aliases) or a custom locale object |
 | `disabled` | `boolean` | `false` | Disables every control and dims the panel |
 | `mode` | `'inline' \| 'popover'` | `'inline'` | Always-visible panel, or input that opens the panel |
 | `previewCount` | `number` | `5` | How many upcoming execution dates to list |

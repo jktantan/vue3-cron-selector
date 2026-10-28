@@ -42,9 +42,9 @@ type SegmentType =
   | 'combined'            // 1,3,5-10
   | 'noSpecific'          // ?（Quartz 的日 / 星期字段）
   | 'lastDay'             // L、L-n（Quartz）
-  | 'lastWeekday'         // LW（Quartz）
+  | 'lastBusinessDay'     // LW（Quartz）
   | 'nearestWeekday'      // 15W（Quartz）
-  | 'lastWeekdayOfMonth'  // 某星期的 L-3（Quartz）
+  | 'lastWeekdayOfMonth'  // nL：每月最后一个指定星期几（Quartz）
   | 'nthWeekday'          // 第 3 个周五（Quartz）
 
 interface BaseSegment {

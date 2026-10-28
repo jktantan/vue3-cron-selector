@@ -22,7 +22,8 @@ const TOKEN_PATTERN = /\{([a-zA-Z][a-zA-Z0-9]*)\}/g
  * Tokens listed in `textTokens` are resolved to their string value and folded
  * into the surrounding text, so they do not become separate elements. That
  * matters for units such as `{unit}` in Chinese, where punctuation must stay
- * glued to the unit ("分钟，从第 …"), and for English suffixes ("Minute(s)").
+ * glued to the unit ("分钟，从第 …"), and for suffixes that must stay attached
+ * to the unit ("minutes").
  */
 export function parseLocaleTemplate(
   template: string,

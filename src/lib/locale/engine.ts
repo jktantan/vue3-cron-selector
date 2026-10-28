@@ -1,22 +1,85 @@
 import type { ParsedCron, Segment } from '../core/types'
-import type { LocaleDefinition } from './types'
-import { EN_LOCALE } from './en'
-import { ZH_LOCALE } from './zh'
+import type { LocaleDefinition, PluralForms } from './types'
+import { EN_US_LOCALE } from './en-US'
+import { ZH_CN_LOCALE } from './zh-CN'
+import { renderLocaleTemplate } from './template'
 
 const BUILT_IN_LOCALES: ReadonlyMap<string, LocaleDefinition> = new Map([
-  ['en', EN_LOCALE],
-  ['zh', ZH_LOCALE],
+  ['en-us', EN_US_LOCALE],
+  ['zh-cn', ZH_CN_LOCALE],
 ])
 
+// A bare language tag resolves to the package's default regional variant, so
+// `locale="zh"` and `locale="zh-CN"` behave the same and match the codes UI
+// frameworks pass around.
+const BASE_LANGUAGE_ALIASES: ReadonlyMap<string, string> = new Map([
+  ['en', 'en-us'],
+  ['zh', 'zh-cn'],
+])
+
+function canonicalizeTag(tag: string): string {
+  try {
+    return Intl.getCanonicalLocales(tag)[0] ?? tag
+  } catch {
+    return tag
+  }
+}
+
+/**
+ * Resolve a BCP 47 tag to a built-in locale.
+ *
+ * Matching is: exact regional tag, then base language, then English. `en` and
+ * `zh` are aliases for the built-in `en-US` and `zh-CN` packs. When a regional
+ * tag such as `zh-TW` or `en-GB` has no pack of its own, the returned locale
+ * keeps the canonicalised tag in `code` so `Intl.DateTimeFormat` and
+ * `Intl.PluralRules` still format for that region; only the copy falls back
+ * to the closest built-in variant.
+ */
 export function resolveLocale(code: string): LocaleDefinition {
-  const locale = BUILT_IN_LOCALES.get(code)
-  if (locale) return locale
+  const tag = canonicalizeTag(code.trim())
+  if (!tag) return EN_US_LOCALE
 
-  const baseCode = code.split('-')[0]
-  const fallback = BUILT_IN_LOCALES.get(baseCode)
-  if (fallback) return fallback
+  const lower = tag.toLowerCase()
+  const exact = BUILT_IN_LOCALES.get(lower)
+  if (exact) return exact
 
-  return EN_LOCALE
+  const language = lower.split('-')[0]
+  const alias = BASE_LANGUAGE_ALIASES.get(language)
+  if (!alias) return EN_US_LOCALE
+
+  const base = BUILT_IN_LOCALES.get(alias)!
+  if (lower === language) return base
+  return { ...base, code: tag }
+}
+
+const pluralRulesCache = new Map<string, Intl.PluralRules>()
+
+function getPluralRules(code: string): Intl.PluralRules {
+  let rules = pluralRulesCache.get(code)
+  if (!rules) {
+    try {
+      rules = new Intl.PluralRules(code)
+    } catch {
+      // A custom locale may carry an invalid tag; English rules are a safe
+      // fallback and keep rendering alive.
+      rules = new Intl.PluralRules('en')
+    }
+    pluralRulesCache.set(code, rules)
+  }
+  return rules
+}
+
+/** Pick the word form for `count` using the locale's BCP 47 plural rules. */
+export function selectPluralForm(forms: PluralForms, count: number, code: string): string {
+  const category = getPluralRules(code).select(count)
+  return forms[category] ?? forms.other
+}
+
+/** Unit word for a field and count, e.g. `5` → "minutes" / "分钟". */
+export function pluralUnit(fieldId: string, count: number, locale: LocaleDefinition): string {
+  const forms = locale.units[fieldId] ?? locale.units.dayOfMonth
+  if (!forms) return locale.fields.labels[fieldId] ?? fieldId
+  return selectPluralForm(forms, count, locale.code)
 }
 
 export function getFieldValueLabel(
@@ -36,47 +99,67 @@ export function getFieldValueLabel(
   return String(value).padStart(2, '0')
 }
 
+function fieldLabel(locale: LocaleDefinition, fieldId: string): string {
+  return locale.fields.labels[fieldId] ?? fieldId
+}
+
+function render(template: string, values: Readonly<Record<string, string>>): string {
+  return renderLocaleTemplate(template, values)
+}
+
 function describeSegment(segment: Segment, fieldId: string, locale: LocaleDefinition): string {
+  const templates = locale.templates.description
+
   switch (segment.type) {
     case 'any':
-      return `${locale.segmentTypes.any} ${locale.fieldLabels[fieldId] ?? fieldId}`
+      return render(templates.everyField, { field: fieldLabel(locale, fieldId) })
     case 'value':
       return getFieldValueLabel(fieldId, segment.value, locale)
     case 'range':
-      return `${getFieldValueLabel(fieldId, segment.from, locale)} ${locale.ui.through} ${getFieldValueLabel(fieldId, segment.to, locale)}`
+      return render(templates.range, {
+        from: getFieldValueLabel(fieldId, segment.from, locale),
+        to: getFieldValueLabel(fieldId, segment.to, locale),
+      })
     case 'step': {
-      const base =
-        segment.base === '*'
-          ? ''
-          : ` ${locale.ui.startingAt} ${getFieldValueLabel(fieldId, segment.base, locale)}`
-      return `${locale.ui.every} ${segment.step} ${locale.fieldLabels[fieldId] ?? fieldId}${base}`
+      const unit = pluralUnit(fieldId, segment.step, locale)
+      if (segment.base === '*') {
+        return render(templates.step, { step: String(segment.step), unit })
+      }
+      return render(templates.stepWithBase, {
+        step: String(segment.step),
+        unit,
+        base: getFieldValueLabel(fieldId, segment.base, locale),
+      })
     }
     case 'combined': {
-      const parts = segment.parts.map((p) => describeSegment(p, fieldId, locale))
-      if (parts.length <= 2) {
-        return parts.join(` ${locale.ui.and} `)
-      }
-      return `${parts.slice(0, -1).join(', ')} ${locale.ui.and} ${parts[parts.length - 1]}`
+      const parts = segment.parts.map((part) => describeSegment(part, fieldId, locale))
+      if (parts.length <= 1) return parts[0] ?? ''
+      return render(templates.list, {
+        head: parts.slice(0, -1).join(templates.listSeparator),
+        last: parts[parts.length - 1],
+      })
     }
     case 'noSpecific':
       return locale.segmentTypes.noSpecific
     case 'lastDay':
-      return segment.offset === 0
-        ? locale.ui.lastDayOfMonth
-        : locale.ui.daysBeforeEndOfMonth.replace('{n}', String(segment.offset))
-    case 'lastWeekday':
-      return locale.ui.lastWeekdayOfMonth
+      if (segment.offset === 0) return locale.templates.day.lastDayOfMonth
+      return render(locale.templates.day.daysBeforeEndOfMonth, {
+        n: String(segment.offset),
+        unit: pluralUnit('dayOfMonth', segment.offset, locale),
+      })
+    case 'lastBusinessDay':
+      return locale.templates.day.lastBusinessDayOfMonth
     case 'nearestWeekday':
-      return locale.ui.nearestWeekdayTo.replace('{day}', String(segment.day))
+      return render(locale.templates.day.nearestWeekdayTo, { day: String(segment.day) })
     case 'lastWeekdayOfMonth':
-      return locale.ui.lastSpecificWeekdayOfMonth.replace(
-        '{weekday}',
-        locale.weekdays[segment.weekday] ?? String(segment.weekday),
-      )
+      return render(locale.templates.day.lastWeekdayOfMonth, {
+        weekday: locale.weekdays[segment.weekday] ?? String(segment.weekday),
+      })
     case 'nthWeekday':
-      return locale.ui.nthWeekdayOfMonth
-        .replace('{nth}', locale.ui.ordinals[segment.nth - 1] ?? String(segment.nth))
-        .replace('{weekday}', locale.weekdays[segment.weekday] ?? String(segment.weekday))
+      return render(locale.templates.day.nthWeekdayOfMonth, {
+        nth: locale.ordinals[segment.nth - 1] ?? String(segment.nth),
+        weekday: locale.weekdays[segment.weekday] ?? String(segment.weekday),
+      })
   }
 }
 
@@ -86,6 +169,7 @@ export function generateDescription(parsed: ParsedCron, locale: LocaleDefinition
   const segments = parsed.segments
   if (segments.size === 0) return ''
 
+  const templates = locale.templates.description
   const parts: string[] = []
 
   const minute = segments.get('minute')
@@ -95,15 +179,15 @@ export function generateDescription(parsed: ParsedCron, locale: LocaleDefinition
   const dayOfWeek = segments.get('dayOfWeek')
   const second = segments.get('second')
 
-  const allAny = (s: Segment | undefined) => !s || s.type === 'any'
+  const allAny = (segment: Segment | undefined) => !segment || segment.type === 'any'
 
   if (allAny(minute) && allAny(hour) && allAny(dayOfMonth) && allAny(month) && allAny(dayOfWeek)) {
     if (second && second.type !== 'any') {
       parts.push(describeSegment(second, 'second', locale))
     } else {
-      parts.push(`${locale.ui.every} ${locale.periods.minute}`)
+      parts.push(render(templates.everyPeriod, { period: locale.periods.minute }))
     }
-    return parts.join(' ')
+    return parts.join(templates.clauseSeparator)
   }
 
   if (
@@ -115,7 +199,7 @@ export function generateDescription(parsed: ParsedCron, locale: LocaleDefinition
     allAny(dayOfWeek)
   ) {
     parts.push(describeSegment(minute, 'minute', locale))
-    return parts.join(' ')
+    return parts.join(templates.clauseSeparator)
   }
 
   if (hour && hour.type !== 'any' && minute && minute.type !== 'any') {
@@ -129,44 +213,63 @@ export function generateDescription(parsed: ParsedCron, locale: LocaleDefinition
         : describeSegment(minute, 'minute', locale)
 
     if (hour.type === 'value' && minute.type === 'value') {
-      parts.push(`${locale.ui.at} ${hourLabel}:${minuteLabel}`)
+      parts.push(render(templates.atTime, { hour: hourLabel, minute: minuteLabel }))
     } else {
-      parts.push(
-        `${locale.ui.at} ${locale.fieldLabels.hour} ${hourLabel}, ${locale.fieldLabels.minute} ${minuteLabel}`,
-      )
+      parts.push(render(templates.atHourMinute, { hour: hourLabel, minute: minuteLabel }))
     }
   } else if (hour && hour.type !== 'any') {
-    parts.push(
-      `${locale.ui.at} ${locale.fieldLabels.hour} ${describeSegment(hour, 'hour', locale)}`,
-    )
+    parts.push(describeSegment(hour, 'hour', locale))
   } else if (minute && minute.type !== 'any') {
     parts.push(describeSegment(minute, 'minute', locale))
   }
 
   if (dayOfWeek && dayOfWeek.type !== 'any' && dayOfWeek.type !== 'noSpecific') {
-    parts.push(`${locale.ui.on} ${describeSegment(dayOfWeek, 'dayOfWeek', locale)}`)
+    // The Quartz weekday modifiers already render a complete clause
+    // ("On the last Friday of the month"); only plain value/range/combined
+    // segments need the "on …" wrapper.
+    const isWeekdayValue =
+      dayOfWeek.type === 'value' || dayOfWeek.type === 'range' || dayOfWeek.type === 'combined'
+    parts.push(
+      isWeekdayValue
+        ? render(templates.on, { value: describeSegment(dayOfWeek, 'dayOfWeek', locale) })
+        : describeSegment(dayOfWeek, 'dayOfWeek', locale),
+    )
   }
 
   if (dayOfMonth && dayOfMonth.type !== 'any' && dayOfMonth.type !== 'noSpecific') {
+    // Value/range/combined describe a day number, so they fit the
+    // "on day … of the month" template. Step and the Quartz day modifiers
+    // already produce a complete clause ("Every 5 days",
+    // "On the last business day of the month"), so wrapping them would
+    // duplicate the month wording.
+    const isDayNumber =
+      dayOfMonth.type === 'value' || dayOfMonth.type === 'range' || dayOfMonth.type === 'combined'
     parts.push(
-      `${locale.ui.on} ${locale.fieldLabels.dayOfMonth} ${describeSegment(dayOfMonth, 'dayOfMonth', locale)}`,
+      isDayNumber
+        ? render(templates.onDayOfMonth, {
+            value: describeSegment(dayOfMonth, 'dayOfMonth', locale),
+          })
+        : describeSegment(dayOfMonth, 'dayOfMonth', locale),
     )
   }
 
   if (month && month.type !== 'any') {
-    parts.push(`${locale.ui.of} ${describeSegment(month, 'month', locale)}`)
+    parts.push(render(templates.inMonth, { value: describeSegment(month, 'month', locale) }))
   }
 
   const year = segments.get('year')
   if (year && year.type !== 'any') {
-    parts.push(`${locale.fieldLabels.year} ${describeSegment(year, 'year', locale)}`)
+    parts.push(render(templates.year, { value: describeSegment(year, 'year', locale) }))
   }
 
   if (second && second.type !== 'any') {
     parts.unshift(
-      `${locale.ui.at} ${locale.fieldLabels.second} ${describeSegment(second, 'second', locale)}`,
+      render(templates.atField, {
+        field: fieldLabel(locale, 'second'),
+        value: describeSegment(second, 'second', locale),
+      }),
     )
   }
 
-  return parts.join(', ')
+  return parts.join(templates.clauseSeparator)
 }

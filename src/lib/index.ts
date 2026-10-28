@@ -37,12 +37,17 @@ export type {
   FieldItem,
 } from './core/types'
 
-export type { LocaleDefinition } from './locale/types'
+export type {
+  LocaleDefinition,
+  LocaleTemplates,
+  FieldOptionLabels,
+  PluralForms,
+} from './locale/types'
 
 export type { CronTheme, ResolvedCronTheme } from './theme/context'
 
-export { EN_LOCALE } from './locale/en'
-export { ZH_LOCALE } from './locale/zh'
+export { EN_US_LOCALE } from './locale/en-US'
+export { ZH_CN_LOCALE } from './locale/zh-CN'
 
 export {
   parseCronExpression,

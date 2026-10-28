@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ExecutionPreview from '../lib/components/ExecutionPreview.vue'
-import { EN_LOCALE } from '../lib/locale/en'
+import { EN_US_LOCALE } from '../lib/locale/en-US'
 
 function makeDate(iso: string): Date {
   return new Date(iso)
@@ -10,7 +10,7 @@ function makeDate(iso: string): Date {
 describe('ExecutionPreview', () => {
   it('renders nothing when executions is empty', () => {
     const wrapper = mount(ExecutionPreview, {
-      props: { executions: [], locale: EN_LOCALE },
+      props: { executions: [], locale: EN_US_LOCALE },
     })
     expect(wrapper.find('.cron-selector__preview').exists()).toBe(false)
   })
@@ -18,7 +18,7 @@ describe('ExecutionPreview', () => {
   it('renders each execution as a time element', () => {
     const executions = [makeDate('2026-01-01T00:00:00Z'), makeDate('2026-01-01T01:00:00Z')]
     const wrapper = mount(ExecutionPreview, {
-      props: { executions, locale: EN_LOCALE, count: 5 },
+      props: { executions, locale: EN_US_LOCALE, count: 5 },
     })
     const items = wrapper.findAll('.cron-selector__preview-item')
     expect(items).toHaveLength(2)
@@ -32,7 +32,7 @@ describe('ExecutionPreview', () => {
       makeDate('2026-01-01T02:00:00Z'),
     ]
     const wrapper = mount(ExecutionPreview, {
-      props: { executions, locale: EN_LOCALE, count: 2 },
+      props: { executions, locale: EN_US_LOCALE, count: 2 },
     })
     expect(wrapper.findAll('.cron-selector__preview-item')).toHaveLength(2)
   })
@@ -40,7 +40,7 @@ describe('ExecutionPreview', () => {
   it('formats dates with the active locale', () => {
     const executions = [makeDate('2026-01-01T00:00:00Z')]
     const wrapper = mount(ExecutionPreview, {
-      props: { executions, locale: EN_LOCALE },
+      props: { executions, locale: EN_US_LOCALE },
     })
     const text = wrapper.find('.cron-selector__preview-item time').text()
     expect(text.length).toBeGreaterThan(0)

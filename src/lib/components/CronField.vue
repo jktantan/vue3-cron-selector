@@ -93,22 +93,27 @@
           @change="onTypeChange('range')"
         />
         <span class="cron-selector__option-text">{{ fieldOptionLabel('range') }}</span>
-        <NumberSpinner
-          :model-value="rangeFrom"
-          :min="field.min"
-          :max="field.max"
-          :disabled="activeType !== 'range'"
-          @update:model-value="onRangeFromUpdate"
-        />
-        <span class="cron-selector__inline-label">{{ locale.ui.to }}</span>
-        <NumberSpinner
-          :model-value="rangeTo"
-          :min="field.min"
-          :max="field.max"
-          :disabled="activeType !== 'range'"
-          @update:model-value="onRangeToUpdate"
-        />
-        <span class="cron-selector__inline-label">{{ fieldLabel }}</span>
+        <template v-for="(part, index) in rangeTemplateParts" :key="index">
+          <span v-if="part.token === null" class="cron-selector__option-text">
+            {{ part.text }}
+          </span>
+          <NumberSpinner
+            v-else-if="part.token === 'from'"
+            :model-value="rangeFrom"
+            :min="field.min"
+            :max="field.max"
+            :disabled="activeType !== 'range'"
+            @update:model-value="onRangeFromUpdate"
+          />
+          <NumberSpinner
+            v-else
+            :model-value="rangeTo"
+            :min="field.min"
+            :max="field.max"
+            :disabled="activeType !== 'range'"
+            @update:model-value="onRangeToUpdate"
+          />
+        </template>
       </label>
     </div>
   </div>
@@ -120,7 +125,7 @@ import type { FieldDefinition, FieldItem, SegmentType } from '../core/types'
 import type { UseCronSegmentReturn } from '../composables/useCronSegment'
 import type { LocaleDefinition } from '../locale/types'
 import { FieldWrapper } from '../core/fields'
-import { getFieldValueLabel } from '../locale/engine'
+import { getFieldValueLabel, pluralUnit } from '../locale/engine'
 import { parseLocaleTemplate, compactTemplateParts } from '../locale/template'
 import FieldGrid from './FieldGrid.vue'
 import NumberSpinner from './NumberSpinner.vue'
@@ -140,19 +145,7 @@ const props = withDefaults(
   },
 )
 
-const fieldLabel = computed(() => props.locale.fieldLabels[props.fieldId] ?? props.fieldId)
-
-// Step row: `{step}` and `{base}` become spinners while `{unit}` is folded
-// into the surrounding text. The template owns the word order so each locale
-// can phrase it naturally.
-const stepTemplateParts = computed(() =>
-  compactTemplateParts(
-    parseLocaleTemplate(
-      props.locale.ui.stepWithBase ?? `{step} {unit} ${props.locale.ui.startingAt} {base}`,
-      { unit: fieldLabel.value },
-    ),
-  ),
-)
+const fieldLabel = computed(() => props.locale.fields.labels[props.fieldId] ?? props.fieldId)
 
 // Reuse a single FieldWrapper per (field, locale) pair. FieldWrapper.items is
 // already memoized internally, but constructing a new wrapper every time
@@ -207,16 +200,27 @@ const stepBaseNum = computed(() => {
   return props.field.min
 })
 
+// Step and range rows are locale templates: `{step}` / `{base}` / `{from}` /
+// `{to}` become spinners, while `{unit}` is folded into the surrounding text
+// with the plural form that `Intl.PluralRules` selects for the count.
+const stepTemplateParts = computed(() =>
+  compactTemplateParts(
+    parseLocaleTemplate(props.locale.templates.step, {
+      unit: pluralUnit(props.fieldId, stepValue.value, props.locale),
+    }),
+  ),
+)
+
+const rangeTemplateParts = computed(() =>
+  compactTemplateParts(
+    parseLocaleTemplate(props.locale.templates.range, {
+      unit: pluralUnit(props.fieldId, rangeTo.value, props.locale),
+    }),
+  ),
+)
+
 function fieldOptionLabel(key: 'everyOne' | 'step' | 'specific' | 'range'): string {
-  const options = props.locale.ui.fieldOptions?.[props.fieldId]
-  if (options) return options[key]
-  const fallback: Record<string, string> = {
-    everyOne: `${props.locale.ui.every} ${fieldLabel.value}`,
-    step: props.locale.ui.every,
-    specific: props.locale.segmentTypes.value ?? 'Specific',
-    range: props.locale.ui.from,
-  }
-  return fallback[key]
+  return props.locale.ui.fieldOptions[props.fieldId]?.[key] ?? fieldLabel.value
 }
 
 function onTypeChange(type: SegmentType): void {

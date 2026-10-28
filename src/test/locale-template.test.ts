@@ -27,12 +27,12 @@ describe('locale template', () => {
 
   it('renders a template with plain values', () => {
     expect(
-      renderLocaleTemplate('Every {step} {unit}(s), starting at {base}', {
+      renderLocaleTemplate('Every {step} {unit}, starting at {base}', {
         step: '5',
-        unit: 'Minute',
+        unit: 'minutes',
         base: '0',
       }),
-    ).toBe('Every 5 Minute(s), starting at 0')
+    ).toBe('Every 5 minutes, starting at 0')
   })
 
   it('compacts parts for flex rows', () => {

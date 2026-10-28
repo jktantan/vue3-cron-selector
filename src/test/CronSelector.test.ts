@@ -191,7 +191,7 @@ describe('CronSelector', () => {
     await wrapper.findAll('.cron-selector__tab')[2].trigger('click')
     const quartzOnlyValues = [
       'lastDay',
-      'lastWeekday',
+      'lastBusinessDay',
       'lastWeekdayOfMonth',
       'lastDayOffset',
       'nearestWeekday',
@@ -211,7 +211,7 @@ describe('CronSelector', () => {
     await wrapper.findAll('.cron-selector__tab')[3].trigger('click')
     const quartzOnlyValues = [
       'lastDay',
-      'lastWeekday',
+      'lastBusinessDay',
       'lastWeekdayOfMonth',
       'lastDayOffset',
       'nearestWeekday',
@@ -234,7 +234,7 @@ describe('CronSelector', () => {
       props: { modelValue: '*/5 * * * *', locale: 'en' },
     })
     const text = wrapper.find('.cron-selector__options').text()
-    expect(text).toContain('Minute(s), starting at')
+    expect(text).toContain('minutes, starting at')
     expect(text).not.toContain('MinuteFrom')
     expect(text).not.toContain('Minutestarting')
   })
@@ -249,7 +249,7 @@ describe('CronSelector', () => {
     expect(text).not.toContain('分钟从')
   })
 
-  it('keeps every placeholder inside the day option copy', async () => {
+  it('renders day option templates without leaking placeholders', async () => {
     const wrapper = mount(CronSelector, {
       props: { format: 'quartz', locale: 'en' },
     })
@@ -261,14 +261,18 @@ describe('CronSelector', () => {
         .map((span) => span.text())
         .join(' '),
     )
+    const copy = optionText.join('\n')
 
-    // Before the template refactor these labels lost the text that followed
-    // the removed placeholder (e.g. "On the last [weekday] of the month"
-    // rendered with the weekday at the end and no "of the month").
-    expect(optionText).toContain('Every day(s) starting at the of the month')
-    expect(optionText).toContain('On the last of the month')
-    expect(optionText).toContain('day(s) before the end of the month')
-    expect(optionText).toContain('Nearest weekday to the of the month')
-    expect(optionText).toContain('On the of the month')
+    for (const text of optionText) {
+      expect(text).not.toContain('{')
+      expect(text).not.toContain('}')
+    }
+
+    expect(copy).toContain('On the last day of the month')
+    expect(copy).toContain('On the last business day of the month')
+    expect(copy).toContain('On the last')
+    expect(copy).toContain('before the end of the month')
+    expect(copy).toContain('Nearest weekday to day')
+    expect(copy).toContain('of the month')
   })
 })

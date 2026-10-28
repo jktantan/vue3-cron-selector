@@ -114,16 +114,18 @@ const visibleTabs = computed<ReadonlyArray<string>>(() => {
 const mergedLocale = computed<LocaleDefinition>(() => {
   if (!hasMergedDayTab.value) return props.locale
   const dayLabel =
-    props.locale.tabLabels?.dayOfMonth ?? props.locale.fieldLabels.dayOfMonth ?? 'Day'
+    props.locale.fields.tabs.dayOfMonth ?? props.locale.fields.labels.dayOfMonth ?? 'Day'
   return {
     ...props.locale,
-    tabLabels: {
-      ...props.locale.tabLabels,
-      [VIRTUAL_DAY_TAB]: dayLabel,
-    },
-    fieldLabels: {
-      ...props.locale.fieldLabels,
-      [VIRTUAL_DAY_TAB]: dayLabel,
+    fields: {
+      labels: {
+        ...props.locale.fields.labels,
+        [VIRTUAL_DAY_TAB]: dayLabel,
+      },
+      tabs: {
+        ...props.locale.fields.tabs,
+        [VIRTUAL_DAY_TAB]: dayLabel,
+      },
     },
   }
 })

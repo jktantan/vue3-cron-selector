@@ -7,7 +7,7 @@ import {
   createCombinedSegment,
   createNoSpecificSegment,
   createLastDaySegment,
-  createLastWeekdaySegment,
+  createLastBusinessDaySegment,
   createNearestWeekdaySegment,
   createLastWeekdayOfMonthSegment,
   createNthWeekdaySegment,
@@ -55,7 +55,7 @@ export function parseCronField(
       throw new Error(`Day modifiers are not supported by ${format} format`)
     }
     if (trimmed === 'L') return createLastDaySegment(0)
-    if (trimmed === 'LW') return createLastWeekdaySegment()
+    if (trimmed === 'LW') return createLastBusinessDaySegment()
     const lastDayOffset = trimmed.match(/^L-(\d+)$/)
     if (lastDayOffset) {
       const offset = Number(lastDayOffset[1])

@@ -6,7 +6,7 @@ import type {
   CombinedSegment,
   NoSpecificSegment,
   LastDaySegment,
-  LastWeekdaySegment,
+  LastBusinessDaySegment,
   NearestWeekdaySegment,
   LastWeekdayOfMonthSegment,
   NthWeekdaySegment,
@@ -159,9 +159,9 @@ export function createLastDaySegment(offset: number = 0): LastDaySegment {
   })
 }
 
-export function createLastWeekdaySegment(): LastWeekdaySegment {
+export function createLastBusinessDaySegment(): LastBusinessDaySegment {
   return Object.freeze({
-    type: 'lastWeekday' as const,
+    type: 'lastBusinessDay' as const,
     values: [] as ReadonlyArray<number>,
     toString: () => 'LW',
   })

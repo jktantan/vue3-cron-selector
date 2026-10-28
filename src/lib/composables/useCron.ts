@@ -43,7 +43,7 @@ function wrapRef<T>(value: Ref<T> | T): Ref<T> {
 
 export function useCron(options?: UseCronOptions): UseCronReturn {
   const formatRef = wrapRef(options?.format ?? 'crontab')
-  const localeRef = wrapRef(options?.locale ?? 'en')
+  const localeRef = wrapRef(options?.locale ?? 'en-US')
   const previewCountRef = wrapRef(options?.previewCount ?? 5)
   const modelValueRef =
     options?.modelValue && isRef(options.modelValue) ? options.modelValue : undefined

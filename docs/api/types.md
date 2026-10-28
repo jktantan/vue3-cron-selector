@@ -42,9 +42,9 @@ type SegmentType =
   | 'combined'            // 1,3,5-10
   | 'noSpecific'          // ? (Quartz day-of-month / day-of-week)
   | 'lastDay'             // L, L-n (Quartz)
-  | 'lastWeekday'         // LW (Quartz)
+  | 'lastBusinessDay'     // LW (Quartz)
   | 'nearestWeekday'      // 15W (Quartz)
-  | 'lastWeekdayOfMonth'  // L-3 for a weekday (Quartz)
+  | 'lastWeekdayOfMonth'  // nL: last named weekday (Quartz)
   | 'nthWeekday'          // 3rd FRI (Quartz)
 
 interface BaseSegment {

@@ -6,7 +6,7 @@
 |------|------|--------|------|
 | `modelValue` | `string` | `''` | Cron 表达式，配合 `v-model` 使用 |
 | `format` | `'crontab' \| 'quartz' \| 'spring'` | `'crontab'` | Cron 方言，详见[格式说明](/zh/guide/formats) |
-| `locale` | `string \| LocaleDefinition` | `'en'` | 语言代码（`'en'`、`'zh'`）或自定义语言对象 |
+| `locale` | `string \| LocaleDefinition` | `'en-US'` | 语言代码（`'en-US'`、`'zh-CN'`；`'en'`/`'zh'` 为别名）或自定义语言对象 |
 | `disabled` | `boolean` | `false` | 禁用全部交互并使面板变暗 |
 | `mode` | `'inline' \| 'popover'` | `'inline'` | 始终可见的面板，或聚焦后展开的输入框 |
 | `previewCount` | `number` | `5` | 展示的后续执行时间数量 |
