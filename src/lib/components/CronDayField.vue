@@ -1,10 +1,10 @@
 <template>
-  <div class="cron-day-field">
-    <div class="cron-day-field__options" role="radiogroup">
+  <div class="cron-selector__field">
+    <div class="cron-selector__options" role="radiogroup">
       <!-- 1. Every day -->
       <label
-        class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeOption === 'everyDay' }"
+        class="cron-selector__option"
+        :class="{ 'cron-selector__option--active': activeOption === 'everyDay' }"
       >
         <input
           type="radio"
@@ -14,13 +14,13 @@
           :checked="activeOption === 'everyDay'"
           @change="selectOption('everyDay')"
         />
-        <span class="cron-day-field__option-text">{{ locale.ui.everyDay }}</span>
+        <span class="cron-selector__option-text">{{ locale.ui.everyDay }}</span>
       </label>
 
       <!-- 2. Every N day(s) starting at D of the month (step) -->
       <label
-        class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeOption === 'dayStep' }"
+        class="cron-selector__option"
+        :class="{ 'cron-selector__option--active': activeOption === 'dayStep' }"
       >
         <input
           type="radio"
@@ -30,31 +30,33 @@
           :checked="activeOption === 'dayStep'"
           @change="selectOption('dayStep')"
         />
-        <span class="cron-day-field__option-text">
-          {{ locale.ui.everyNDaysStartingAt.replace('{step}', '').replace('{start}', '') }}
-        </span>
-        <NumberSpinner
-          :model-value="stepValue"
-          :min="1"
-          :max="31"
-          :disabled="activeOption !== 'dayStep'"
-          @update:model-value="onStepValueUpdate"
-        />
-        <span class="cron-day-field__inline-label">{{ locale.ui.day }}</span>
-        <span class="cron-day-field__inline-label">{{ locale.ui.startingAt }}</span>
-        <NumberSpinner
-          :model-value="stepStart"
-          :min="1"
-          :max="31"
-          :disabled="activeOption !== 'dayStep'"
-          @update:model-value="onStepStartUpdate"
-        />
+        <template v-for="(part, index) in dayStepTemplateParts" :key="index">
+          <span v-if="part.token === null" class="cron-selector__option-text">
+            {{ part.text }}
+          </span>
+          <NumberSpinner
+            v-else-if="part.token === 'step'"
+            :model-value="stepValue"
+            :min="1"
+            :max="31"
+            :disabled="activeOption !== 'dayStep'"
+            @update:model-value="onStepValueUpdate"
+          />
+          <NumberSpinner
+            v-else
+            :model-value="stepStart"
+            :min="1"
+            :max="31"
+            :disabled="activeOption !== 'dayStep'"
+            @update:model-value="onStepStartUpdate"
+          />
+        </template>
       </label>
 
       <!-- 3. Specific day of week (multi-select) -->
       <label
-        class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeOption === 'specificDow' }"
+        class="cron-selector__option"
+        :class="{ 'cron-selector__option--active': activeOption === 'specificDow' }"
       >
         <input
           type="radio"
@@ -64,9 +66,9 @@
           :checked="activeOption === 'specificDow'"
           @change="selectOption('specificDow')"
         />
-        <span class="cron-day-field__option-text">{{ locale.ui.specificDayOfWeek }}</span>
+        <span class="cron-selector__option-text">{{ locale.ui.specificDayOfWeek }}</span>
       </label>
-      <div v-if="activeOption === 'specificDow'" class="cron-day-field__sub-content">
+      <div v-if="activeOption === 'specificDow'" class="cron-selector__sub-content">
         <FieldGrid
           :items="weekdayItems"
           :selected="dowSelected"
@@ -78,8 +80,8 @@
 
       <!-- 4. Specific day of month (multi-select) -->
       <label
-        class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeOption === 'specificDom' }"
+        class="cron-selector__option"
+        :class="{ 'cron-selector__option--active': activeOption === 'specificDom' }"
       >
         <input
           type="radio"
@@ -89,9 +91,9 @@
           :checked="activeOption === 'specificDom'"
           @change="selectOption('specificDom')"
         />
-        <span class="cron-day-field__option-text">{{ locale.ui.specificDayOfMonth }}</span>
+        <span class="cron-selector__option-text">{{ locale.ui.specificDayOfMonth }}</span>
       </label>
-      <div v-if="activeOption === 'specificDom'" class="cron-day-field__sub-content">
+      <div v-if="activeOption === 'specificDom'" class="cron-selector__sub-content">
         <FieldGrid
           :items="domItems"
           :selected="domSelected"
@@ -110,8 +112,8 @@
       <template v-if="!isCrontab">
         <!-- 5. On the last day of the month -->
         <label
-          class="cron-day-field__option"
-          :class="{ 'cron-day-field__option--active': activeOption === 'lastDay' }"
+          class="cron-selector__option"
+          :class="{ 'cron-selector__option--active': activeOption === 'lastDay' }"
         >
           <input
             type="radio"
@@ -121,13 +123,13 @@
             :checked="activeOption === 'lastDay'"
             @change="selectOption('lastDay')"
           />
-          <span class="cron-day-field__option-text">{{ locale.ui.lastDayOfMonth }}</span>
+          <span class="cron-selector__option-text">{{ locale.ui.lastDayOfMonth }}</span>
         </label>
 
         <!-- 6. On the last weekday of the month -->
         <label
-          class="cron-day-field__option"
-          :class="{ 'cron-day-field__option--active': activeOption === 'lastWeekday' }"
+          class="cron-selector__option"
+          :class="{ 'cron-selector__option--active': activeOption === 'lastWeekday' }"
         >
           <input
             type="radio"
@@ -137,13 +139,13 @@
             :checked="activeOption === 'lastWeekday'"
             @change="selectOption('lastWeekday')"
           />
-          <span class="cron-day-field__option-text">{{ locale.ui.lastWeekdayOfMonth }}</span>
+          <span class="cron-selector__option-text">{{ locale.ui.lastWeekdayOfMonth }}</span>
         </label>
 
         <!-- 7. On the last [weekday] of the month -->
         <label
-          class="cron-day-field__option"
-          :class="{ 'cron-day-field__option--active': activeOption === 'lastWeekdayOfMonth' }"
+          class="cron-selector__option"
+          :class="{ 'cron-selector__option--active': activeOption === 'lastWeekdayOfMonth' }"
         >
           <input
             type="radio"
@@ -153,21 +155,24 @@
             :checked="activeOption === 'lastWeekdayOfMonth'"
             @change="selectOption('lastWeekdayOfMonth')"
           />
-          <span class="cron-day-field__option-text">
-            {{ locale.ui.lastSpecificWeekdayOfMonth.replace('{weekday}', '') }}
-          </span>
-          <InlineSelect
-            :model-value="lastWeekdayValue"
-            :items="weekdaySelectItems"
-            :disabled="activeOption !== 'lastWeekdayOfMonth'"
-            @update:model-value="onLastWeekdayUpdate"
-          />
+          <template v-for="(part, index) in lastWeekdayTemplateParts" :key="index">
+            <span v-if="part.token === null" class="cron-selector__option-text">
+              {{ part.text }}
+            </span>
+            <InlineSelect
+              v-else
+              :model-value="lastWeekdayValue"
+              :items="weekdaySelectItems"
+              :disabled="activeOption !== 'lastWeekdayOfMonth'"
+              @update:model-value="onLastWeekdayUpdate"
+            />
+          </template>
         </label>
 
         <!-- 8. N day(s) before end of month -->
         <label
-          class="cron-day-field__option"
-          :class="{ 'cron-day-field__option--active': activeOption === 'lastDayOffset' }"
+          class="cron-selector__option"
+          :class="{ 'cron-selector__option--active': activeOption === 'lastDayOffset' }"
         >
           <input
             type="radio"
@@ -177,23 +182,25 @@
             :checked="activeOption === 'lastDayOffset'"
             @change="selectOption('lastDayOffset')"
           />
-          <span class="cron-day-field__option-text">
-            {{ locale.ui.daysBeforeEndOfMonth.replace('{n}', '') }}
-          </span>
-          <NumberSpinner
-            :model-value="lastDayOffsetValue"
-            :min="1"
-            :max="30"
-            :disabled="activeOption !== 'lastDayOffset'"
-            @update:model-value="onLastDayOffsetUpdate"
-          />
-          <span class="cron-day-field__inline-label">{{ locale.ui.days }}</span>
+          <template v-for="(part, index) in lastDayOffsetTemplateParts" :key="index">
+            <span v-if="part.token === null" class="cron-selector__option-text">
+              {{ part.text }}
+            </span>
+            <NumberSpinner
+              v-else
+              :model-value="lastDayOffsetValue"
+              :min="1"
+              :max="30"
+              :disabled="activeOption !== 'lastDayOffset'"
+              @update:model-value="onLastDayOffsetUpdate"
+            />
+          </template>
         </label>
 
         <!-- 9. Nearest weekday to the Nth -->
         <label
-          class="cron-day-field__option"
-          :class="{ 'cron-day-field__option--active': activeOption === 'nearestWeekday' }"
+          class="cron-selector__option"
+          :class="{ 'cron-selector__option--active': activeOption === 'nearestWeekday' }"
         >
           <input
             type="radio"
@@ -203,22 +210,25 @@
             :checked="activeOption === 'nearestWeekday'"
             @change="selectOption('nearestWeekday')"
           />
-          <span class="cron-day-field__option-text">
-            {{ locale.ui.nearestWeekdayTo.replace('{day}', '') }}
-          </span>
-          <NumberSpinner
-            :model-value="nearestWeekdayDay"
-            :min="1"
-            :max="31"
-            :disabled="activeOption !== 'nearestWeekday'"
-            @update:model-value="onNearestWeekdayDayUpdate"
-          />
+          <template v-for="(part, index) in nearestWeekdayTemplateParts" :key="index">
+            <span v-if="part.token === null" class="cron-selector__option-text">
+              {{ part.text }}
+            </span>
+            <NumberSpinner
+              v-else
+              :model-value="nearestWeekdayDay"
+              :min="1"
+              :max="31"
+              :disabled="activeOption !== 'nearestWeekday'"
+              @update:model-value="onNearestWeekdayDayUpdate"
+            />
+          </template>
         </label>
 
         <!-- 10. On the Nth [weekday] of the month -->
         <label
-          class="cron-day-field__option"
-          :class="{ 'cron-day-field__option--active': activeOption === 'nthWeekday' }"
+          class="cron-selector__option"
+          :class="{ 'cron-selector__option--active': activeOption === 'nthWeekday' }"
         >
           <input
             type="radio"
@@ -228,21 +238,25 @@
             :checked="activeOption === 'nthWeekday'"
             @change="selectOption('nthWeekday')"
           />
-          <span class="cron-day-field__option-text">
-            {{ locale.ui.nthWeekdayOfMonth.replace('{nth}', '').replace('{weekday}', '') }}
-          </span>
-          <InlineSelect
-            :model-value="nthOrdinal"
-            :items="ordinalSelectItems"
-            :disabled="activeOption !== 'nthWeekday'"
-            @update:model-value="onNthOrdinalUpdate"
-          />
-          <InlineSelect
-            :model-value="nthWeekdayValue"
-            :items="weekdaySelectItems"
-            :disabled="activeOption !== 'nthWeekday'"
-            @update:model-value="onNthWeekdayUpdate"
-          />
+          <template v-for="(part, index) in nthWeekdayTemplateParts" :key="index">
+            <span v-if="part.token === null" class="cron-selector__option-text">
+              {{ part.text }}
+            </span>
+            <InlineSelect
+              v-else-if="part.token === 'nth'"
+              :model-value="nthOrdinal"
+              :items="ordinalSelectItems"
+              :disabled="activeOption !== 'nthWeekday'"
+              @update:model-value="onNthOrdinalUpdate"
+            />
+            <InlineSelect
+              v-else
+              :model-value="nthWeekdayValue"
+              :items="weekdaySelectItems"
+              :disabled="activeOption !== 'nthWeekday'"
+              @update:model-value="onNthWeekdayUpdate"
+            />
+          </template>
         </label>
       </template>
     </div>
@@ -256,6 +270,7 @@ import type { UseCronSegmentReturn } from '../composables/useCronSegment'
 import type { LocaleDefinition } from '../locale/types'
 import { FieldWrapper } from '../core/fields'
 import { getFieldValueLabel } from '../locale/engine'
+import { parseLocaleTemplate, compactTemplateParts } from '../locale/template'
 import { DAY_OF_MONTH_FIELD, DAY_OF_WEEK_FIELD } from '../core/fields'
 import FieldGrid from './FieldGrid.vue'
 import NumberSpinner from './NumberSpinner.vue'
@@ -325,6 +340,25 @@ const ordinalSelectItems = computed<ReadonlyArray<FieldItem>>(() =>
 
 const domSelected = computed<ReadonlyArray<number>>(() => [...props.domSegment.selected.value])
 const dowSelected = computed<ReadonlyArray<number>>(() => [...props.dowSegment.selected.value])
+
+// Each option's copy is a locale template; the components render its literal
+// text inline and put the spinners/selects where the placeholders sit, so the
+// word order stays correct in every language.
+const dayStepTemplateParts = computed(() =>
+  compactTemplateParts(parseLocaleTemplate(props.locale.ui.everyNDaysStartingAt)),
+)
+const lastWeekdayTemplateParts = computed(() =>
+  compactTemplateParts(parseLocaleTemplate(props.locale.ui.lastSpecificWeekdayOfMonth)),
+)
+const lastDayOffsetTemplateParts = computed(() =>
+  compactTemplateParts(parseLocaleTemplate(props.locale.ui.daysBeforeEndOfMonth)),
+)
+const nearestWeekdayTemplateParts = computed(() =>
+  compactTemplateParts(parseLocaleTemplate(props.locale.ui.nearestWeekdayTo)),
+)
+const nthWeekdayTemplateParts = computed(() =>
+  compactTemplateParts(parseLocaleTemplate(props.locale.ui.nthWeekdayOfMonth)),
+)
 
 function detectActiveOption(): DayOption {
   const domSeg = props.domSegment.segment.value

@@ -1,26 +1,96 @@
-.cron-selector {
+// vue3-cron-selector component styles.
+//
+// Naming: a single BEM block, `cron-selector`.
+//   .cron-selector                    root / block
+//   .cron-selector__element           element
+//   .cron-selector--modifier          block modifier
+//   .cron-selector__element--modifier element modifier
+//
+// There is no descendant scoping, so every class can be overridden by a
+// consumer stylesheet without fighting specificity, and teleported panels
+// (popover, dropdown) are styled by the same flat class names.
+//
+// All colours, sizes and motion values come from CSS custom properties defined
+// in variables.scss (light/dark aware, Element Plus aligned).
+
+// Native scrollbars keep the OS light palette unless the page opts into a
+// colour scheme, so tint the ones inside the component from the resolved
+// tokens instead. That also covers `auto` mode, where the dark palette comes
+// from `html.dark` without any modifier class on the component.
+@mixin cron-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--cron-color-border) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--cron-color-border);
+    border-radius: var(--cron-border-radius);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--cron-color-text-secondary);
+  }
+}
+
+.cron-selector,
+.cron-selector__popover-panel,
+.cron-selector__select-dropdown {
+  box-sizing: border-box;
   font-family: var(--cron-font-family);
   font-size: var(--cron-font-size-base);
   line-height: var(--cron-line-height);
   color: var(--cron-color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.cron-selector *,
+.cron-selector *::before,
+.cron-selector *::after,
+.cron-selector__popover-panel *,
+.cron-selector__popover-panel *::before,
+.cron-selector__popover-panel *::after,
+.cron-selector__select-dropdown *,
+.cron-selector__select-dropdown *::before,
+.cron-selector__select-dropdown *::after {
+  box-sizing: border-box;
+}
+
+.cron-selector {
+  position: relative;
+  display: block;
+  width: 100%;
 
   &--disabled {
     opacity: 0.6;
     pointer-events: none;
   }
-}
 
-.cron-tabs {
-  display: flex;
-  border-bottom: var(--cron-border-width) solid var(--cron-color-border);
-  overflow-x: auto;
+  // ---------------------------------------------------------------- tabs ---
+  &__tabs {
+    display: flex;
+    overflow-x: auto;
+    background: var(--cron-color-bg);
+    border-bottom: var(--cron-border-width) solid var(--cron-color-border-light);
+
+    @include cron-scrollbar;
+  }
 
   &__tab {
     flex: 1 1 0;
-    padding: var(--cron-spacing-sm) var(--cron-spacing-md);
-    font-size: var(--cron-font-size-base);
+    min-width: max-content;
+    height: var(--cron-tab-height);
+    padding: 0 var(--cron-spacing-md);
     font-family: inherit;
-    color: var(--cron-color-text-secondary);
+    font-size: var(--cron-font-size-base);
+    color: var(--cron-color-text-regular);
     background: transparent;
     border: none;
     border-bottom: 2px solid transparent;
@@ -29,17 +99,15 @@
     text-align: center;
     transition:
       color var(--cron-transition-duration) var(--cron-transition-easing),
-      background var(--cron-transition-duration) var(--cron-transition-easing),
       border-color var(--cron-transition-duration) var(--cron-transition-easing);
 
-    &:hover {
-      background: var(--cron-color-bg-hover);
+    &:hover:not(:disabled) {
+      color: var(--cron-color-primary);
     }
 
     &--active {
       color: var(--cron-color-primary);
       border-bottom-color: var(--cron-color-primary);
-      background: var(--cron-color-primary-light);
       font-weight: 500;
     }
 
@@ -49,61 +117,68 @@
     }
 
     &:disabled {
+      color: var(--cron-color-text-placeholder);
       cursor: not-allowed;
-      opacity: 0.5;
     }
   }
-}
 
-.cron-tabbed-panel {
-  border: var(--cron-border-width) solid var(--cron-color-border);
-  border-radius: var(--cron-border-radius-lg);
-  background: var(--cron-color-bg);
-  box-shadow: var(--cron-shadow-sm);
-  overflow: hidden;
+  // --------------------------------------------------------------- panel ---
+  &__panel {
+    overflow: hidden;
+    color: var(--cron-color-text);
+    background: var(--cron-color-bg);
+    border: var(--cron-border-width) solid var(--cron-color-border);
+    border-radius: var(--cron-border-radius-lg);
+    box-shadow: var(--cron-shadow-sm);
+  }
 
-  &__body {
+  &__panel-body {
     display: grid;
-    grid-template-columns: 1fr 240px;
+    grid-template-columns: minmax(0, 1fr) 240px;
     gap: var(--cron-spacing-lg);
-    padding: var(--cron-spacing-lg);
     min-height: var(--cron-body-min-height);
+    padding: var(--cron-spacing-lg);
 
     @media (max-width: 640px) {
       grid-template-columns: 1fr;
     }
   }
 
-  &__field {
+  &__panel-field {
     min-width: 0;
-    overflow-y: auto;
     max-height: 360px;
+    overflow-y: auto;
+    padding-right: var(--cron-spacing-xs);
+
+    @include cron-scrollbar;
   }
 
-  &__preview {
+  &__panel-preview {
     flex-shrink: 0;
-    border-left: var(--cron-border-width) solid var(--cron-color-border);
     padding-left: var(--cron-spacing-lg);
+    border-left: var(--cron-border-width) solid var(--cron-color-border-lighter);
 
     @media (max-width: 640px) {
-      border-left: none;
-      border-top: var(--cron-border-width) solid var(--cron-color-border);
-      padding-left: 0;
       padding-top: var(--cron-spacing-md);
+      padding-left: 0;
+      border-top: var(--cron-border-width) solid var(--cron-color-border-lighter);
+      border-left: none;
     }
   }
 
   &__expression {
-    padding: var(--cron-spacing-sm) var(--cron-spacing-lg);
-    border-top: var(--cron-border-width) solid var(--cron-color-border);
-    background: var(--cron-color-bg-hover);
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--cron-spacing-sm);
+    min-height: var(--cron-tab-height);
+    padding: var(--cron-spacing-sm) var(--cron-spacing-lg);
+    background: var(--cron-color-fill);
+    border-top: var(--cron-border-width) solid var(--cron-color-border-lighter);
   }
 
   &__expression-text {
-    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
     font-size: var(--cron-font-size-base);
     color: var(--cron-color-text);
 
@@ -116,66 +191,87 @@
     font-size: var(--cron-font-size-sm);
     color: var(--cron-color-error);
   }
-}
 
-.cron-popover {
-  position: relative;
-  display: inline-block;
-  width: 100%;
+  // ------------------------------------------------------------- popover ---
+  &__popover {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+  }
 
   &__input {
     width: 100%;
-    padding: var(--cron-spacing-sm) var(--cron-spacing-md);
-    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+    height: var(--cron-control-height);
+    padding: 0 11px;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
     font-size: var(--cron-font-size-base);
-    color: var(--cron-color-text);
+    color: var(--cron-color-text-regular);
     background: var(--cron-color-bg);
     border: var(--cron-border-width) solid var(--cron-color-border);
     border-radius: var(--cron-border-radius);
     outline: none;
-    box-sizing: border-box;
     transition:
       border-color var(--cron-transition-duration) var(--cron-transition-easing),
       box-shadow var(--cron-transition-duration) var(--cron-transition-easing);
 
+    &::placeholder {
+      color: var(--cron-color-text-placeholder);
+    }
+
+    &:hover:not(:disabled) {
+      border-color: var(--cron-color-primary-border);
+    }
+
     &:focus {
       border-color: var(--cron-color-border-focus);
-      box-shadow: 0 0 0 3px var(--cron-color-primary-light);
+      box-shadow: 0 0 0 1px var(--cron-color-primary) inset;
     }
 
     &--error {
       border-color: var(--cron-color-error);
 
       &:focus {
-        box-shadow: 0 0 0 3px var(--cron-color-error-light);
+        box-shadow: 0 0 0 1px var(--cron-color-error) inset;
       }
     }
 
     &:disabled {
+      color: var(--cron-color-text-placeholder);
+      background: var(--cron-color-bg-hover);
       cursor: not-allowed;
-      opacity: 0.5;
     }
   }
 
   &__error {
     display: block;
-    font-size: var(--cron-font-size-sm);
-    color: var(--cron-color-error);
     margin-top: var(--cron-spacing-xs);
+    font-size: var(--cron-font-size-sm);
+    line-height: 1.4;
+    color: var(--cron-color-error);
   }
 
-  &__panel {
+  &__popover-panel {
     position: fixed;
     z-index: var(--cron-popover-z-index);
     max-width: var(--cron-popover-max-width);
-    box-shadow: var(--cron-shadow-lg);
-    border-radius: var(--cron-border-radius-lg);
     overflow: hidden;
+    color: var(--cron-color-text);
+    background: var(--cron-color-bg);
+    border-radius: var(--cron-border-radius-lg);
+    box-shadow: var(--cron-shadow-lg);
+
+    > .cron-selector__panel {
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
   }
-}
 
+  // --------------------------------------------------------- option rows ---
+  &__field {
+    min-width: 0;
+  }
 
-.cron-day-field {
   &__options {
     display: flex;
     flex-direction: column;
@@ -184,31 +280,33 @@
 
   &__option {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
     gap: var(--cron-spacing-sm);
-    padding: var(--cron-spacing-sm) var(--cron-spacing-md);
-    font-size: var(--cron-font-size-sm);
+    align-items: center;
+    min-height: 36px;
+    padding: var(--cron-spacing-xs) var(--cron-spacing-sm);
+    font-size: var(--cron-font-size-base);
+    color: var(--cron-color-text-regular);
     border: var(--cron-border-width) solid transparent;
     border-radius: var(--cron-border-radius);
     cursor: pointer;
     transition:
       background var(--cron-transition-duration) var(--cron-transition-easing),
       border-color var(--cron-transition-duration) var(--cron-transition-easing);
-    flex-wrap: wrap;
 
     &:hover {
       background: var(--cron-color-bg-hover);
     }
 
     &--active {
+      background: var(--cron-color-bg-selected);
       border-color: var(--cron-color-primary);
-      background: var(--cron-color-primary-light);
     }
 
     input[type='radio'] {
-      accent-color: var(--cron-color-primary);
-      margin: 0;
       flex-shrink: 0;
+      margin: 0;
+      accent-color: var(--cron-color-primary);
     }
   }
 
@@ -217,8 +315,8 @@
   }
 
   &__sub-content {
-    padding: var(--cron-spacing-sm) var(--cron-spacing-md) var(--cron-spacing-md)
-      calc(var(--cron-spacing-md) + 20px);
+    padding: var(--cron-spacing-sm) var(--cron-spacing-sm) var(--cron-spacing-md)
+      calc(var(--cron-spacing-sm) + 20px);
   }
 
   &__inline-label {
@@ -226,69 +324,79 @@
     color: var(--cron-color-text-secondary);
     white-space: nowrap;
   }
-}
 
-.cron-inline-select {
-  position: relative;
-  display: inline-flex;
-
-  &__trigger {
+  // -------------------------------------------------------- inline select ---
+  &__select {
+    position: relative;
     display: inline-flex;
-    align-items: center;
-    gap: var(--cron-spacing-xs);
-    padding: 2px var(--cron-spacing-sm);
-    font-size: var(--cron-font-size-base);
-    font-family: inherit;
-    color: var(--cron-color-primary);
-    background: var(--cron-color-primary-light);
-    border: var(--cron-border-width) solid transparent;
-    border-radius: var(--cron-border-radius);
-    cursor: pointer;
-    transition: border-color var(--cron-transition-duration) var(--cron-transition-easing);
-    white-space: nowrap;
-    line-height: var(--cron-line-height);
+  }
 
-    &:hover {
-      border-color: var(--cron-color-primary);
+  &__select-trigger {
+    display: inline-flex;
+    gap: var(--cron-spacing-xs);
+    align-items: center;
+    min-height: 24px;
+    padding: 0 var(--cron-spacing-sm);
+    font-family: inherit;
+    font-size: var(--cron-font-size-sm);
+    line-height: 1.4;
+    color: var(--cron-color-text-regular);
+    white-space: nowrap;
+    cursor: pointer;
+    background: var(--cron-color-bg);
+    border: var(--cron-border-width) solid var(--cron-color-border);
+    border-radius: var(--cron-border-radius);
+    transition:
+      color var(--cron-transition-duration) var(--cron-transition-easing),
+      border-color var(--cron-transition-duration) var(--cron-transition-easing);
+
+    &:hover:not(:disabled) {
+      color: var(--cron-color-primary);
+      border-color: var(--cron-color-primary-border);
     }
 
     &:focus-visible {
       outline: 2px solid var(--cron-color-primary);
-      outline-offset: 2px;
+      outline-offset: 1px;
     }
 
     &--open {
+      color: var(--cron-color-primary);
       border-color: var(--cron-color-primary);
     }
 
     &:disabled {
-      opacity: 0.35;
+      color: var(--cron-color-text-placeholder);
+      background: var(--cron-color-bg-hover);
       cursor: not-allowed;
-      pointer-events: none;
     }
   }
 
-  &__dropdown {
+  &__select-dropdown {
     position: fixed;
-    z-index: 1000;
+    z-index: var(--cron-popover-z-index);
     min-width: 120px;
     max-height: 240px;
+    padding: var(--cron-spacing-xs) 0;
+    margin: 0;
     overflow-y: auto;
+    list-style: none;
     background: var(--cron-color-bg);
-    border: var(--cron-border-width) solid var(--cron-color-border);
+    border: var(--cron-border-width) solid var(--cron-color-border-light);
     border-radius: var(--cron-border-radius);
     box-shadow: var(--cron-shadow-lg);
-    padding: var(--cron-spacing-xs);
-    margin: 0;
-    list-style: none;
+
+    @include cron-scrollbar;
   }
 
-  &__option {
-    padding: var(--cron-spacing-xs) var(--cron-spacing-sm);
-    border-radius: calc(var(--cron-border-radius) - 2px);
+  &__select-option {
+    padding: 0 var(--cron-spacing-md);
+    font-size: var(--cron-font-size-base);
+    line-height: 30px;
+    color: var(--cron-color-text-regular);
+    white-space: nowrap;
     cursor: pointer;
     transition: background var(--cron-transition-duration) var(--cron-transition-easing);
-    white-space: nowrap;
 
     &:hover,
     &--highlighted {
@@ -296,38 +404,42 @@
     }
 
     &--selected {
-      background: var(--cron-color-bg-selected);
       color: var(--cron-color-primary);
-      font-weight: 500;
+      font-weight: 600;
+      background: var(--cron-color-bg-selected);
     }
   }
-}
 
-.cron-grid {
-  display: grid;
-  gap: 2px;
+  // ---------------------------------------------------------------- grid ---
+  &__grid {
+    display: grid;
+    gap: var(--cron-spacing-xs);
+  }
 
   &__cell {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--cron-spacing-xs);
+    min-width: 26px;
+    min-height: var(--cron-grid-cell-height);
+    padding: 0 var(--cron-spacing-xs);
+    font-family: inherit;
     font-size: var(--cron-font-size-sm);
-    border: var(--cron-border-width) solid var(--cron-color-border);
-    border-radius: calc(var(--cron-border-radius) - 2px);
-    background: var(--cron-color-bg);
-    cursor: pointer;
-    transition:
-      background var(--cron-transition-duration) var(--cron-transition-easing),
-      border-color var(--cron-transition-duration) var(--cron-transition-easing),
-      color var(--cron-transition-duration) var(--cron-transition-easing);
-    min-width: 32px;
-    min-height: 28px;
+    color: var(--cron-color-text-regular);
     user-select: none;
+    cursor: pointer;
+    background: var(--cron-color-bg);
+    border: var(--cron-border-width) solid var(--cron-color-border-light);
+    border-radius: calc(var(--cron-border-radius) - 1px);
+    transition:
+      color var(--cron-transition-duration) var(--cron-transition-easing),
+      background var(--cron-transition-duration) var(--cron-transition-easing),
+      border-color var(--cron-transition-duration) var(--cron-transition-easing);
 
     &:hover {
-      border-color: var(--cron-color-primary);
-      background: var(--cron-color-bg-hover);
+      color: var(--cron-color-primary);
+      background: var(--cron-color-bg-selected);
+      border-color: var(--cron-color-primary-border);
     }
 
     &:focus-visible {
@@ -336,141 +448,155 @@
     }
 
     &--selected {
+      color: #ffffff;
       background: var(--cron-color-primary);
       border-color: var(--cron-color-primary);
-      color: #ffffff;
 
       &:hover {
+        color: #ffffff;
         background: var(--cron-color-primary-hover);
         border-color: var(--cron-color-primary-hover);
       }
     }
 
     &--disabled {
-      opacity: 0.4;
       pointer-events: none;
+      opacity: 0.4;
     }
   }
-}
 
-.cron-preview {
-  &__header {
+  // ------------------------------------------------------------- preview ---
+  &__preview {
+    font-size: var(--cron-font-size-sm);
+  }
+
+  &__preview-header {
     display: flex;
-    align-items: center;
     gap: var(--cron-spacing-xs);
+    align-items: center;
+    margin-bottom: var(--cron-spacing-sm);
     font-size: var(--cron-font-size-sm);
     font-weight: 600;
     color: var(--cron-color-text-secondary);
-    margin-bottom: var(--cron-spacing-sm);
   }
 
-  &__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  &__preview-list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--cron-spacing-xs);
+    padding: 0;
+    margin: 0;
+    list-style: none;
   }
 
-  &__item {
-    font-size: var(--cron-font-size-sm);
-    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
-    color: var(--cron-color-text-secondary);
+  &__preview-item {
     padding: var(--cron-spacing-xs) var(--cron-spacing-sm);
-    background: var(--cron-color-bg-hover);
-    border-radius: calc(var(--cron-border-radius) - 2px);
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: var(--cron-font-size-sm);
+    color: var(--cron-color-text-regular);
+    background: var(--cron-color-fill);
+    border-radius: var(--cron-border-radius);
   }
-}
 
-.cron-error {
-  font-size: var(--cron-font-size-sm);
-  color: var(--cron-color-error);
-  padding: var(--cron-spacing-xs) 0;
-  margin-bottom: var(--cron-spacing-md);
-}
+  // ------------------------------------------------------ number spinner ---
+  &__spinner {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    height: var(--cron-control-height);
+    overflow: hidden;
+    background: var(--cron-color-bg);
+    border: var(--cron-border-width) solid var(--cron-color-border);
+    border-radius: var(--cron-border-radius);
+    transition:
+      border-color var(--cron-transition-duration) var(--cron-transition-easing),
+      box-shadow var(--cron-transition-duration) var(--cron-transition-easing);
 
-.cron-number-spinner {
-  display: inline-flex;
-  align-items: center;
-  border: var(--cron-border-width) solid var(--cron-color-border);
-  border-radius: var(--cron-border-radius);
-  overflow: hidden;
-  flex-shrink: 0;
+    &:hover {
+      border-color: var(--cron-color-primary-border);
+    }
 
-  &__btn {
+    &:focus-within {
+      border-color: var(--cron-color-primary);
+      box-shadow: 0 0 0 1px var(--cron-color-primary) inset;
+    }
+  }
+
+  &__spinner-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 100%;
     padding: 0;
-    font-size: var(--cron-font-size-base);
     font-family: inherit;
-    color: var(--cron-color-text-secondary);
-    background: var(--cron-color-bg-hover);
-    border: none;
-    cursor: pointer;
-    transition:
-      background var(--cron-transition-duration) var(--cron-transition-easing),
-      color var(--cron-transition-duration) var(--cron-transition-easing);
-    user-select: none;
+    font-size: var(--cron-font-size-base);
     line-height: 1;
+    color: var(--cron-color-text-regular);
+    user-select: none;
+    cursor: pointer;
+    background: var(--cron-color-fill);
+    border: none;
+    transition:
+      color var(--cron-transition-duration) var(--cron-transition-easing),
+      background var(--cron-transition-duration) var(--cron-transition-easing);
 
     &:hover:not(:disabled) {
-      background: var(--cron-color-border);
-      color: var(--cron-color-text);
+      color: var(--cron-color-primary);
+      background: var(--cron-color-bg-hover);
     }
 
     &:disabled {
-      opacity: 0.35;
+      color: var(--cron-color-text-placeholder);
       cursor: not-allowed;
     }
   }
 
-  &__input {
-    width: 36px;
-    height: 28px;
+  &__spinner-input {
+    width: 40px;
+    height: 100%;
     padding: 0 var(--cron-spacing-xs);
-    font-size: var(--cron-font-size-sm);
     font-family: inherit;
+    font-size: var(--cron-font-size-sm);
     color: var(--cron-color-text);
-    background: var(--cron-color-bg);
-    border: none;
-    border-left: var(--cron-border-width) solid var(--cron-color-border);
-    border-right: var(--cron-border-width) solid var(--cron-color-border);
-    outline: none;
     text-align: center;
+    background: transparent;
+    border: none;
+    border-right: var(--cron-border-width) solid var(--cron-color-border-light);
+    border-left: var(--cron-border-width) solid var(--cron-color-border-light);
+    outline: none;
 
     &:focus {
-      background: var(--cron-color-primary-light);
+      color: var(--cron-color-primary);
+      background: var(--cron-color-bg-selected);
     }
 
     &:disabled {
-      opacity: 0.5;
+      color: var(--cron-color-text-placeholder);
       cursor: not-allowed;
     }
   }
-}
 
-.cron-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1em;
-  height: 1em;
-  flex-shrink: 0;
+  // ---------------------------------------------------------------- icon ---
+  &__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
 
-  svg {
-    width: 100%;
-    height: 100%;
-  }
+    svg {
+      width: 100%;
+      height: 100%;
+    }
 
-  &--chevron {
-    transition: transform var(--cron-transition-duration) var(--cron-transition-easing);
-  }
+    &--chevron {
+      transition: transform var(--cron-transition-duration) var(--cron-transition-easing);
+    }
 
-  &--chevron-up {
-    transform: rotate(180deg);
+    &--chevron-up {
+      transform: rotate(180deg);
+    }
   }
 }

@@ -60,7 +60,7 @@ describe('FieldGrid', () => {
     const wrapper = mount(FieldGrid, {
       props: { items, selected: [], cols: 4 },
     })
-    const grid = wrapper.find('.cron-grid')
+    const grid = wrapper.find('.cron-selector__grid')
     expect(grid.attributes('style')).toContain('grid-template-columns: repeat(4, 1fr)')
   })
 
@@ -80,8 +80,8 @@ describe('FieldGrid', () => {
       props: { items, selected: [2] },
     })
     const buttons = wrapper.findAll('button')
-    expect(buttons[2].classes()).toContain('cron-grid__cell--selected')
-    expect(buttons[0].classes()).not.toContain('cron-grid__cell--selected')
+    expect(buttons[2].classes()).toContain('cron-selector__cell--selected')
+    expect(buttons[0].classes()).not.toContain('cron-selector__cell--selected')
   })
 
   it('does not crash with a stale shift-anchor when value is not in items', async () => {

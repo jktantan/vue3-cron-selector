@@ -83,7 +83,7 @@ export function useCronSegment(options: UseCronSegmentOptions): UseCronSegmentRe
       case 'value':
         segment.value = selectedToSegment(selected.value, field)
         break
-      case 'combined':
+      case 'combined': {
         // Build a combined segment explicitly so the type is always 'combined',
         // independent of selectedToSegment's pattern-detection (which would
         // collapse arithmetic progressions into a step segment).
@@ -127,6 +127,7 @@ export function useCronSegment(options: UseCronSegmentOptions): UseCronSegmentRe
           segment.value = parts[0] ?? createAnySegment(field)
         }
         break
+      }
       case 'noSpecific':
         segment.value = createNoSpecificSegment()
         break

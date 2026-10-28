@@ -6,12 +6,12 @@ describe('CronSelector', () => {
   it('renders with default props', () => {
     const wrapper = mount(CronSelector)
     expect(wrapper.find('.cron-selector').exists()).toBe(true)
-    expect(wrapper.find('.cron-tabbed-panel').exists()).toBe(true)
+    expect(wrapper.find('.cron-selector__panel').exists()).toBe(true)
   })
 
   it('renders tab bar with crontab fields (merged day tab)', () => {
     const wrapper = mount(CronSelector)
-    const tabs = wrapper.findAll('.cron-tabs__tab')
+    const tabs = wrapper.findAll('.cron-selector__tab')
     expect(tabs).toHaveLength(4)
   })
 
@@ -19,7 +19,7 @@ describe('CronSelector', () => {
     const wrapper = mount(CronSelector, {
       props: { format: 'quartz' },
     })
-    const tabs = wrapper.findAll('.cron-tabs__tab')
+    const tabs = wrapper.findAll('.cron-selector__tab')
     expect(tabs).toHaveLength(6)
   })
 
@@ -27,7 +27,7 @@ describe('CronSelector', () => {
     const wrapper = mount(CronSelector, {
       props: { modelValue: '*/5 * * * *' },
     })
-    const expr = wrapper.find('.cron-tabbed-panel__expression-text')
+    const expr = wrapper.find('.cron-selector__expression-text')
     expect(expr.exists()).toBe(true)
     expect(expr.text()).toBe('*/5 * * * *')
   })
@@ -36,7 +36,7 @@ describe('CronSelector', () => {
     const wrapper = mount(CronSelector, {
       props: { modelValue: '* * * * *' },
     })
-    const radios = wrapper.findAll('.cron-day-field__option input[type="radio"]')
+    const radios = wrapper.findAll('.cron-selector__option input[type="radio"]')
     const stepRadio = radios.find((r) => r.attributes('value') === 'step')
     if (stepRadio) {
       await stepRadio.setValue(true)
@@ -49,7 +49,7 @@ describe('CronSelector', () => {
     const wrapper = mount(CronSelector, {
       props: { modelValue: '* * *' },
     })
-    expect(wrapper.find('.cron-tabbed-panel__expression-text--error').exists()).toBe(true)
+    expect(wrapper.find('.cron-selector__expression-text--error').exists()).toBe(true)
   })
 
   it('applies disabled class when disabled', () => {
@@ -59,48 +59,101 @@ describe('CronSelector', () => {
     expect(wrapper.find('.cron-selector--disabled').exists()).toBe(true)
     expect(
       wrapper
-        .findAll('.cron-day-field__option input[type="radio"]')
+        .findAll('.cron-selector__option input[type="radio"]')
         .every((radio) => radio.attributes('disabled') !== undefined),
     ).toBe(true)
   })
 
+  it('applies explicit theme modifiers and clears them for auto', async () => {
+    const wrapper = mount(CronSelector, { props: { theme: 'dark' } })
+    const root = wrapper.find('.cron-selector')
+    expect(root.classes()).toContain('cron-selector--dark')
+
+    await wrapper.setProps({ theme: 'light' })
+    expect(root.classes()).toContain('cron-selector--light')
+    expect(root.classes()).not.toContain('cron-selector--dark')
+
+    await wrapper.setProps({ theme: 'auto' })
+    expect(root.classes()).not.toContain('cron-selector--light')
+    expect(root.classes()).not.toContain('cron-selector--dark')
+  })
+
+  it('carries the explicit theme into the teleported popover panel', async () => {
+    const wrapper = mount(CronSelector, {
+      props: { mode: 'popover', theme: 'dark' },
+    })
+    const inputEl = wrapper.find('input').element as HTMLInputElement
+    inputEl.dispatchEvent(new FocusEvent('focus', { bubbles: true }))
+    await wrapper.vm.$nextTick()
+
+    const panel = document.querySelector('.cron-selector__popover-panel')!
+    expect(panel.classList.contains('cron-selector--dark')).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('applies a custom primary colour as derived CSS variables', () => {
+    const wrapper = mount(CronSelector, {
+      props: { primaryColor: '#16a34a' },
+    })
+    const style = wrapper.find('.cron-selector').attributes('style') ?? ''
+    expect(style).toContain('--cron-color-primary: #16a34a')
+    expect(style).toContain('--cron-color-primary-hover: color-mix(')
+    expect(style).toContain('--cron-color-primary-light: color-mix(')
+    expect(style).toContain('--cron-color-primary-border: color-mix(')
+    expect(style).toContain('--cron-color-bg-selected: color-mix(')
+    expect(style).toContain('--cron-color-border-focus: #16a34a')
+  })
+
+  it('carries a custom primary colour into the teleported popover panel', async () => {
+    const wrapper = mount(CronSelector, {
+      props: { mode: 'popover', primaryColor: '#16a34a' },
+    })
+    const inputEl = wrapper.find('input').element as HTMLInputElement
+    inputEl.dispatchEvent(new FocusEvent('focus', { bubbles: true }))
+    await wrapper.vm.$nextTick()
+
+    const panel = document.querySelector('.cron-selector__popover-panel')!
+    expect(panel.getAttribute('style')).toContain('--cron-color-primary: #16a34a')
+    wrapper.unmount()
+  })
+
   it('disables day option radios on the day tab', async () => {
     const wrapper = mount(CronSelector)
-    await wrapper.findAll('.cron-tabs__tab')[2].trigger('click')
+    await wrapper.findAll('.cron-selector__tab')[2].trigger('click')
     await wrapper.setProps({ disabled: true })
     expect(
       wrapper
-        .findAll('.cron-day-field__option input[type="radio"]')
+        .findAll('.cron-selector__option input[type="radio"]')
         .every((radio) => radio.attributes('disabled') !== undefined),
     ).toBe(true)
   })
 
   it('renders tabbed panel in inline mode by default', () => {
     const wrapper = mount(CronSelector)
-    expect(wrapper.find('.cron-tabbed-panel').exists()).toBe(true)
-    expect(wrapper.find('.cron-popover').exists()).toBe(false)
+    expect(wrapper.find('.cron-selector__panel').exists()).toBe(true)
+    expect(wrapper.find('.cron-selector__popover').exists()).toBe(false)
   })
 
   it('renders popover in popover mode', () => {
     const wrapper = mount(CronSelector, {
       props: { mode: 'popover' },
     })
-    expect(wrapper.find('.cron-popover').exists()).toBe(true)
-    expect(wrapper.find('.cron-popover__input').exists()).toBe(true)
+    expect(wrapper.find('.cron-selector__popover').exists()).toBe(true)
+    expect(wrapper.find('.cron-selector__input').exists()).toBe(true)
   })
 
   it('popover input shows the cron expression', () => {
     const wrapper = mount(CronSelector, {
       props: { mode: 'popover', modelValue: '0 12 * * *' },
     })
-    const input = wrapper.find('.cron-popover__input')
+    const input = wrapper.find('.cron-selector__input')
     expect((input.element as HTMLInputElement).value).toBe('0 12 * * *')
   })
 
   it('allows mouse focus inside the popover panel', async () => {
     const wrapper = mount(CronSelector, { props: { mode: 'popover' } })
-    await wrapper.find('.cron-popover__input').trigger('focus')
-    const panel = document.querySelector('.cron-popover__panel')!
+    await wrapper.find('.cron-selector__input').trigger('focus')
+    const panel = document.querySelector('.cron-selector__popover-panel')!
     const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true })
     panel.dispatchEvent(event)
     expect(event.defaultPrevented).toBe(false)
@@ -116,28 +169,35 @@ describe('CronSelector', () => {
     const inputEl = wrapper.find('input').element as HTMLInputElement
     inputEl.dispatchEvent(new FocusEvent('focus', { bubbles: true }))
     await wrapper.vm.$nextTick()
-    expect(document.querySelector('.cron-popover__panel')).toBeTruthy()
+    expect(document.querySelector('.cron-selector__popover-panel')).toBeTruthy()
     // Fire Escape on document since the popover listens there. This simulates
     // the user having tabbed focus into a control inside the panel.
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
     await wrapper.vm.$nextTick()
-    expect(document.querySelector('.cron-popover__panel')).toBeFalsy()
+    expect(document.querySelector('.cron-selector__popover-panel')).toBeFalsy()
     wrapper.unmount()
   })
 
   it('renders field options for the active tab', () => {
     const wrapper = mount(CronSelector)
-    expect(wrapper.find('.cron-day-field').exists()).toBe(true)
-    expect(wrapper.find('.cron-day-field__options').exists()).toBe(true)
+    expect(wrapper.find('.cron-selector__field').exists()).toBe(true)
+    expect(wrapper.find('.cron-selector__options').exists()).toBe(true)
   })
 
   it('hides Quartz-only day options in crontab mode', async () => {
     const wrapper = mount(CronSelector, {
       props: { format: 'crontab' },
     })
-    await wrapper.findAll('.cron-tabs__tab')[2].trigger('click')
-    const quartzOnlyValues = ['lastDay', 'lastWeekday', 'lastWeekdayOfMonth', 'lastDayOffset', 'nearestWeekday', 'nthWeekday']
-    const radios = wrapper.findAll('.cron-day-field__option input[type="radio"]')
+    await wrapper.findAll('.cron-selector__tab')[2].trigger('click')
+    const quartzOnlyValues = [
+      'lastDay',
+      'lastWeekday',
+      'lastWeekdayOfMonth',
+      'lastDayOffset',
+      'nearestWeekday',
+      'nthWeekday',
+    ]
+    const radios = wrapper.findAll('.cron-selector__option input[type="radio"]')
     const foundValues = radios.map((r) => r.attributes('value'))
     for (const value of quartzOnlyValues) {
       expect(foundValues, `radio ${value} should be hidden in crontab`).not.toContain(value)
@@ -148,14 +208,24 @@ describe('CronSelector', () => {
     const wrapper = mount(CronSelector, {
       props: { format: 'quartz' },
     })
-    await wrapper.findAll('.cron-tabs__tab')[3].trigger('click')
-    const quartzOnlyValues = ['lastDay', 'lastWeekday', 'lastWeekdayOfMonth', 'lastDayOffset', 'nearestWeekday', 'nthWeekday']
-    const radios = wrapper.findAll('.cron-day-field__option input[type="radio"]')
+    await wrapper.findAll('.cron-selector__tab')[3].trigger('click')
+    const quartzOnlyValues = [
+      'lastDay',
+      'lastWeekday',
+      'lastWeekdayOfMonth',
+      'lastDayOffset',
+      'nearestWeekday',
+      'nthWeekday',
+    ]
+    const radios = wrapper.findAll('.cron-selector__option input[type="radio"]')
     const foundValues = radios.map((r) => r.attributes('value'))
     for (const value of quartzOnlyValues) {
       expect(foundValues, `radio ${value} should be visible in quartz`).toContain(value)
       const radio = radios.find((r) => r.attributes('value') === value)
-      expect(radio!.attributes('disabled'), `radio ${value} should be enabled in quartz`).toBeUndefined()
+      expect(
+        radio!.attributes('disabled'),
+        `radio ${value} should be enabled in quartz`,
+      ).toBeUndefined()
     }
   })
 })

@@ -1,11 +1,11 @@
 <template>
-  <div class="cron-tabs" role="tablist">
+  <div class="cron-selector__tabs" role="tablist">
     <button
       v-for="(fieldId, index) in fields"
       :key="fieldId"
       role="tab"
-      class="cron-tabs__tab"
-      :class="{ 'cron-tabs__tab--active': fieldId === activeField }"
+      class="cron-selector__tab"
+      :class="{ 'cron-selector__tab--active': fieldId === activeField }"
       :aria-selected="fieldId === activeField"
       :tabindex="fieldId === activeField ? 0 : -1"
       :disabled="disabled"

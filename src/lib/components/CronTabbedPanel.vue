@@ -1,5 +1,5 @@
 <template>
-  <div class="cron-tabbed-panel">
+  <div class="cron-selector__panel">
     <CronTabBar
       :fields="visibleTabs"
       :active-field="activeTabId"
@@ -8,8 +8,8 @@
       @update:active-field="activeTabId = $event"
     />
 
-    <div class="cron-tabbed-panel__body">
-      <div class="cron-tabbed-panel__field">
+    <div class="cron-selector__panel-body">
+      <div class="cron-selector__panel-field">
         <CronDayField
           v-if="isDayTabActive && hasMergedDayTab"
           :dom-segment="domSegment!"
@@ -30,19 +30,19 @@
         />
       </div>
 
-      <div class="cron-tabbed-panel__preview">
+      <div class="cron-selector__panel-preview">
         <ExecutionPreview :executions="executions" :count="previewCount" :locale="locale" />
       </div>
     </div>
 
-    <div class="cron-tabbed-panel__expression">
+    <div class="cron-selector__expression">
       <code
-        class="cron-tabbed-panel__expression-text"
-        :class="{ 'cron-tabbed-panel__expression-text--error': !isValid }"
+        class="cron-selector__expression-text"
+        :class="{ 'cron-selector__expression-text--error': !isValid }"
       >
         {{ cronString }}
       </code>
-      <span v-if="!isValid" class="cron-tabbed-panel__expression-error">{{ error }}</span>
+      <span v-if="!isValid" class="cron-selector__expression-error">{{ error }}</span>
     </div>
   </div>
 </template>

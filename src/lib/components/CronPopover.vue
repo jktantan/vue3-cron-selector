@@ -1,10 +1,10 @@
 <template>
-  <div ref="containerRef" class="cron-popover">
+  <div ref="containerRef" class="cron-selector__popover">
     <input
       ref="inputRef"
       type="text"
-      class="cron-popover__input"
-      :class="{ 'cron-popover__input--error': !isValid }"
+      class="cron-selector__input"
+      :class="{ 'cron-selector__input--error': !isValid }"
       :value="modelValue"
       :disabled="disabled"
       :placeholder="locale.ui.placeholder"
@@ -13,10 +13,16 @@
       @focus="open"
       @keydown.escape="close"
     />
-    <span v-if="!isValid && showError" class="cron-popover__error">{{ error }}</span>
+    <span v-if="!isValid && showError" class="cron-selector__error">{{ error }}</span>
 
     <Teleport to="body">
-      <div v-if="isOpen" ref="panelRef" class="cron-popover__panel" :style="panelStyle">
+      <div
+        v-if="isOpen"
+        ref="panelRef"
+        class="cron-selector__popover-panel"
+        :class="themeClass"
+        :style="[panelStyle, themeStyle]"
+      >
         <slot />
       </div>
     </Teleport>
@@ -24,10 +30,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onBeforeUnmount, nextTick, provide } from 'vue'
+import { ref, computed, watch, onBeforeUnmount, nextTick, provide, inject } from 'vue'
 import type { LocaleDefinition } from '../locale/types'
 import { calcPlacement } from '../utils/positioning'
 import { FloatingPanelKey, type FloatingPanelHost } from '../index'
+import { CronThemeKey, CronThemeStyleKey } from '../theme/context'
 
 const props = withDefaults(
   defineProps<{
@@ -51,6 +58,14 @@ const inputRef = ref<HTMLInputElement | null>(null)
 const panelRef = ref<HTMLElement | null>(null)
 const isOpen = ref(false)
 const showError = ref(false)
+
+// Teleported to <body>, so it cannot inherit the modifier from the component
+// root — carry it over explicitly.
+const resolvedTheme = inject(CronThemeKey, null)
+const themeClass = computed(() =>
+  resolvedTheme?.value ? `cron-selector--${resolvedTheme.value}` : '',
+)
+const themeStyle = inject(CronThemeStyleKey, null)
 
 const panelPosition = ref({ top: 0, left: 0, width: 0 })
 
@@ -77,7 +92,10 @@ provide(FloatingPanelKey, floatingHost)
 function updatePosition(): void {
   if (!inputRef.value) return
   const rect = inputRef.value.getBoundingClientRect()
-  const minWidth = Math.max(rect.width, 480)
+  // Never exceed the viewport: on narrow screens the panel keeps a small
+  // horizontal margin instead of overflowing the right edge.
+  const maxWidth = Math.min(680, window.innerWidth - 16)
+  const minWidth = Math.min(Math.max(rect.width, 480), maxWidth)
   const panelHeight = panelRef.value?.offsetHeight ?? 320
   const placement = calcPlacement({
     anchorRect: rect,

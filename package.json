@@ -57,7 +57,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "build:lib": "vue-tsc -p tsconfig.app.json --noEmit && vite build --mode lib",
+    "build:lib": "vue-tsc -p tsconfig.app.json --noEmit && vite build --mode lib && sass --no-source-map --style=compressed src/lib/theme/index.scss dist/vue3-cron-selector.css",
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",

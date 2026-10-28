@@ -1,13 +1,13 @@
 <template>
-  <div class="cron-grid" :style="gridStyle">
+  <div class="cron-selector__grid" :style="gridStyle">
     <button
       v-for="item in items"
       :key="item.value"
       type="button"
-      class="cron-grid__cell"
+      class="cron-selector__cell"
       :class="{
-        'cron-grid__cell--selected': isSelected(item.value),
-        'cron-grid__cell--disabled': disabled,
+        'cron-selector__cell--selected': isSelected(item.value),
+        'cron-selector__cell--disabled': disabled,
       }"
       :disabled="disabled"
       :aria-pressed="isSelected(item.value)"

@@ -1,13 +1,13 @@
 <template>
-  <div ref="wrapperRef" class="cron-inline-select">
+  <div ref="wrapperRef" class="cron-selector__select">
     <button
       ref="triggerEl"
       type="button"
       role="combobox"
       :aria-expanded="isOpen"
       aria-haspopup="listbox"
-      class="cron-inline-select__trigger"
-      :class="{ 'cron-inline-select__trigger--open': isOpen }"
+      class="cron-selector__select-trigger"
+      :class="{ 'cron-selector__select-trigger--open': isOpen }"
       :disabled="disabled"
       @click="toggle"
       @keydown="handleKeydown"
@@ -20,18 +20,19 @@
         v-if="isOpen"
         ref="dropdownEl"
         role="listbox"
-        class="cron-inline-select__dropdown"
-        :style="dropdownStyle"
+        class="cron-selector__select-dropdown"
+        :class="themeClass"
+        :style="[dropdownStyle, themeStyle]"
       >
         <li
           v-for="(item, index) in items"
           :key="item.value"
           role="option"
           :aria-selected="isSelected(item.value)"
-          class="cron-inline-select__option"
+          class="cron-selector__select-option"
           :class="{
-            'cron-inline-select__option--selected': isSelected(item.value),
-            'cron-inline-select__option--highlighted': index === highlightedIndex,
+            'cron-selector__select-option--selected': isSelected(item.value),
+            'cron-selector__select-option--highlighted': index === highlightedIndex,
           }"
           @click="onItemClick(item.value)"
           @mouseenter="highlightedIndex = index"
@@ -48,6 +49,7 @@ import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, inject } fr
 import type { FieldItem } from '../core/types'
 import { calcPlacement } from '../utils/positioning'
 import { FloatingPanelKey } from '../index'
+import { CronThemeKey, CronThemeStyleKey } from '../theme/context'
 import ChevronIcon from './icons/ChevronIcon.vue'
 
 const props = withDefaults(
@@ -80,6 +82,14 @@ const dropdownStyle = ref<Record<string, string>>({})
 // our dropdown so its click-outside logic can recognize this floating element
 // as part of itself instead of the outside world.
 const floatingHost = inject(FloatingPanelKey, null)
+
+// The dropdown is teleported to <body>; mirror the explicit theme modifier
+// provided by CronSelector so it does not fall back to the document theme.
+const resolvedTheme = inject(CronThemeKey, null)
+const themeClass = computed(() =>
+  resolvedTheme?.value ? `cron-selector--${resolvedTheme.value}` : '',
+)
+const themeStyle = inject(CronThemeStyleKey, null)
 
 const displayLabel = computed(() => {
   if (props.multiple && Array.isArray(props.modelValue)) {
@@ -127,7 +137,7 @@ function toggle(): void {
 }
 
 function open(): void {
-  document.dispatchEvent(new CustomEvent('cron-inline-select:open'))
+  document.dispatchEvent(new CustomEvent('cron-selector:select-open'))
   isOpen.value = true
   highlightedIndex.value = 0
   nextTick(() => updateDropdownPosition())
@@ -228,12 +238,12 @@ watch(isOpen, (val) => {
 })
 
 onMounted(() => {
-  document.addEventListener('cron-inline-select:open', onOtherSelectOpen)
+  document.addEventListener('cron-selector:select-open', onOtherSelectOpen)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', handleClickOutside)
-  document.removeEventListener('cron-inline-select:open', onOtherSelectOpen)
+  document.removeEventListener('cron-selector:select-open', onOtherSelectOpen)
   window.removeEventListener('resize', updateDropdownPosition)
   window.removeEventListener('scroll', updateDropdownPosition, true)
   if (floatingHost && dropdownEl.value) {

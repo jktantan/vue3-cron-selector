@@ -12,7 +12,7 @@ describe('ExecutionPreview', () => {
     const wrapper = mount(ExecutionPreview, {
       props: { executions: [], locale: EN_LOCALE },
     })
-    expect(wrapper.find('.cron-preview').exists()).toBe(false)
+    expect(wrapper.find('.cron-selector__preview').exists()).toBe(false)
   })
 
   it('renders each execution as a time element', () => {
@@ -20,7 +20,7 @@ describe('ExecutionPreview', () => {
     const wrapper = mount(ExecutionPreview, {
       props: { executions, locale: EN_LOCALE, count: 5 },
     })
-    const items = wrapper.findAll('.cron-preview__item')
+    const items = wrapper.findAll('.cron-selector__preview-item')
     expect(items).toHaveLength(2)
     expect(items[0].find('time').attributes('datetime')).toBe('2026-01-01T00:00:00.000Z')
   })
@@ -34,7 +34,7 @@ describe('ExecutionPreview', () => {
     const wrapper = mount(ExecutionPreview, {
       props: { executions, locale: EN_LOCALE, count: 2 },
     })
-    expect(wrapper.findAll('.cron-preview__item')).toHaveLength(2)
+    expect(wrapper.findAll('.cron-selector__preview-item')).toHaveLength(2)
   })
 
   it('formats dates with the active locale', () => {
@@ -42,7 +42,7 @@ describe('ExecutionPreview', () => {
     const wrapper = mount(ExecutionPreview, {
       props: { executions, locale: EN_LOCALE },
     })
-    const text = wrapper.find('.cron-preview__item time').text()
+    const text = wrapper.find('.cron-selector__preview-item time').text()
     expect(text.length).toBeGreaterThan(0)
     // The exact format depends on the test host's Intl data; just make sure
     // the rendered text is non-empty and contains a recognizable component.

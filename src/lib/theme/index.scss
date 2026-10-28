@@ -1,0 +1,7 @@
+// Standalone stylesheet entry.
+//
+// The library JS entry (`src/lib/index.ts`) deliberately does not import any
+// CSS. The build compiles this file to `dist/vue3-cron-selector.css`, exposed
+// as `vue3-cron-selector/style.css` in package.json.
+@use './variables';
+@use './cron-selector';

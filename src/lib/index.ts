@@ -1,8 +1,9 @@
 import type { App, InjectionKey } from 'vue'
 import CronSelector from './components/CronSelector.vue'
 
-import './theme/variables.scss'
-import './theme/cron-selector.scss'
+// Styles are intentionally NOT imported here. Consumers opt in with
+// `import 'vue3-cron-selector/style.css'`; keeping the JS entry style-free lets
+// tree-shaking, SSR and custom theme pipelines work without side effects.
 
 export { default as CronSelector } from './components/CronSelector.vue'
 
@@ -37,6 +38,8 @@ export type {
 } from './core/types'
 
 export type { LocaleDefinition } from './locale/types'
+
+export type { CronTheme, ResolvedCronTheme } from './theme/context'
 
 export { EN_LOCALE } from './locale/en'
 export { ZH_LOCALE } from './locale/zh'

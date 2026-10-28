@@ -1,11 +1,15 @@
 <template>
-  <div v-if="executions.length > 0" class="cron-preview">
-    <div class="cron-preview__header">
+  <div v-if="executions.length > 0" class="cron-selector__preview">
+    <div class="cron-selector__preview-header">
       <ClockIcon />
       <span>{{ locale.ui.nextRuns }}</span>
     </div>
-    <ol class="cron-preview__list">
-      <li v-for="(date, index) in displayedExecutions" :key="index" class="cron-preview__item">
+    <ol class="cron-selector__preview-list">
+      <li
+        v-for="(date, index) in displayedExecutions"
+        :key="index"
+        class="cron-selector__preview-item"
+      >
         <time :datetime="date.toISOString()">{{ formatDate(date) }}</time>
       </li>
     </ol>

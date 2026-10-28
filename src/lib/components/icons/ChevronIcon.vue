@@ -1,5 +1,9 @@
 <template>
-  <span class="cron-icon cron-icon--chevron" :class="rotationClass" aria-hidden="true">
+  <span
+    class="cron-selector__icon cron-selector__icon--chevron"
+    :class="rotationClass"
+    aria-hidden="true"
+  >
     <svg
       viewBox="0 0 16 16"
       fill="none"
@@ -25,7 +29,7 @@ const props = withDefaults(
 )
 
 const rotationClass = computed(() => {
-  if (props.direction === 'up') return 'cron-icon--chevron-up'
+  if (props.direction === 'up') return 'cron-selector__icon--chevron-up'
   return ''
 })
 </script>

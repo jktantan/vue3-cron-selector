@@ -1,10 +1,10 @@
 <template>
-  <div class="cron-day-field">
-    <div class="cron-day-field__options" role="radiogroup">
+  <div class="cron-selector__field">
+    <div class="cron-selector__options" role="radiogroup">
       <!-- 1. Every one (any) -->
       <label
-        class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeType === 'any' }"
+        class="cron-selector__option"
+        :class="{ 'cron-selector__option--active': activeType === 'any' }"
       >
         <input
           type="radio"
@@ -14,13 +14,13 @@
           :checked="activeType === 'any'"
           @change="onTypeChange('any')"
         />
-        <span class="cron-day-field__option-text">{{ fieldOptionLabel('everyOne') }}</span>
+        <span class="cron-selector__option-text">{{ fieldOptionLabel('everyOne') }}</span>
       </label>
 
       <!-- 2. Step (every N units starting at N) -->
       <label
-        class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeType === 'step' }"
+        class="cron-selector__option"
+        :class="{ 'cron-selector__option--active': activeType === 'step' }"
       >
         <input
           type="radio"
@@ -30,29 +30,34 @@
           :checked="activeType === 'step'"
           @change="onTypeChange('step')"
         />
-        <span class="cron-day-field__option-text">{{ fieldOptionLabel('step') }}</span>
-        <NumberSpinner
-          :model-value="stepValue"
-          :min="1"
-          :max="field.max - field.min"
-          :disabled="activeType !== 'step'"
-          @update:model-value="onStepValueUpdate"
-        />
-        <span class="cron-day-field__inline-label">{{ fieldLabel }}{{ locale.ui.from }}</span>
-        <NumberSpinner
-          :model-value="stepBaseNum"
-          :min="field.min"
-          :max="field.max"
-          :disabled="activeType !== 'step'"
-          @update:model-value="onStepBaseUpdate"
-        />
-        <span class="cron-day-field__inline-label">{{ fieldLabel }}{{ locale.ui.startingAt }}</span>
+        <span class="cron-selector__option-text">{{ fieldOptionLabel('step') }}</span>
+        <template v-for="(part, index) in stepTemplateParts" :key="index">
+          <NumberSpinner
+            v-if="part.token === 'step'"
+            :model-value="stepValue"
+            :min="1"
+            :max="field.max - field.min"
+            :disabled="activeType !== 'step'"
+            @update:model-value="onStepValueUpdate"
+          />
+          <NumberSpinner
+            v-else-if="part.token === 'base'"
+            :model-value="stepBaseNum"
+            :min="field.min"
+            :max="field.max"
+            :disabled="activeType !== 'step'"
+            @update:model-value="onStepBaseUpdate"
+          />
+          <span v-else-if="part.token === null" class="cron-selector__option-text">
+            {{ part.text }}
+          </span>
+        </template>
       </label>
 
       <!-- 3. Specific values (multi-select grid) -->
       <label
-        class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeType === 'value' }"
+        class="cron-selector__option"
+        :class="{ 'cron-selector__option--active': activeType === 'value' }"
       >
         <input
           type="radio"
@@ -62,9 +67,9 @@
           :checked="activeType === 'value'"
           @change="onTypeChange('value')"
         />
-        <span class="cron-day-field__option-text">{{ fieldOptionLabel('specific') }}</span>
+        <span class="cron-selector__option-text">{{ fieldOptionLabel('specific') }}</span>
       </label>
-      <div v-if="activeType === 'value'" class="cron-day-field__sub-content">
+      <div v-if="activeType === 'value'" class="cron-selector__sub-content">
         <FieldGrid
           :items="fieldItems"
           :selected="selectedValues"
@@ -76,8 +81,8 @@
 
       <!-- 4. Range (from N to N) -->
       <label
-        class="cron-day-field__option"
-        :class="{ 'cron-day-field__option--active': activeType === 'range' }"
+        class="cron-selector__option"
+        :class="{ 'cron-selector__option--active': activeType === 'range' }"
       >
         <input
           type="radio"
@@ -87,7 +92,7 @@
           :checked="activeType === 'range'"
           @change="onTypeChange('range')"
         />
-        <span class="cron-day-field__option-text">{{ fieldOptionLabel('range') }}</span>
+        <span class="cron-selector__option-text">{{ fieldOptionLabel('range') }}</span>
         <NumberSpinner
           :model-value="rangeFrom"
           :min="field.min"
@@ -95,7 +100,7 @@
           :disabled="activeType !== 'range'"
           @update:model-value="onRangeFromUpdate"
         />
-        <span class="cron-day-field__inline-label">{{ locale.ui.to }}</span>
+        <span class="cron-selector__inline-label">{{ locale.ui.to }}</span>
         <NumberSpinner
           :model-value="rangeTo"
           :min="field.min"
@@ -103,7 +108,7 @@
           :disabled="activeType !== 'range'"
           @update:model-value="onRangeToUpdate"
         />
-        <span class="cron-day-field__inline-label">{{ fieldLabel }}</span>
+        <span class="cron-selector__inline-label">{{ fieldLabel }}</span>
       </label>
     </div>
   </div>
@@ -116,6 +121,7 @@ import type { UseCronSegmentReturn } from '../composables/useCronSegment'
 import type { LocaleDefinition } from '../locale/types'
 import { FieldWrapper } from '../core/fields'
 import { getFieldValueLabel } from '../locale/engine'
+import { parseLocaleTemplate, compactTemplateParts } from '../locale/template'
 import FieldGrid from './FieldGrid.vue'
 import NumberSpinner from './NumberSpinner.vue'
 
@@ -136,13 +142,24 @@ const props = withDefaults(
 
 const fieldLabel = computed(() => props.locale.fieldLabels[props.fieldId] ?? props.fieldId)
 
+// Step row: `{step}` and `{base}` become spinners while `{unit}` is folded
+// into the surrounding text. The template owns the word order so each locale
+// can phrase it naturally.
+const stepTemplateParts = computed(() =>
+  compactTemplateParts(
+    parseLocaleTemplate(
+      props.locale.ui.stepWithBase ?? `{step} {unit} ${props.locale.ui.startingAt} {base}`,
+      { unit: fieldLabel.value },
+    ),
+  ),
+)
+
 // Reuse a single FieldWrapper per (field, locale) pair. FieldWrapper.items is
 // already memoized internally, but constructing a new wrapper every time
 // `props.locale` becomes a new object reference wastes garbage. locale.code is
 // the only stable identity we can key on.
 const wrapper = computed(() => {
-  const labelFn = (value: number): string =>
-    getFieldValueLabel(props.fieldId, value, props.locale)
+  const labelFn = (value: number): string => getFieldValueLabel(props.fieldId, value, props.locale)
   return new FieldWrapper(props.field, labelFn)
 })
 

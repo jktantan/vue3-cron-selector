@@ -1,8 +1,8 @@
 <template>
-  <span class="cron-number-spinner">
+  <span class="cron-selector__spinner">
     <button
       type="button"
-      class="cron-number-spinner__btn"
+      class="cron-selector__spinner-btn"
       :disabled="disabled || modelValue <= min"
       tabindex="-1"
       @click="decrement"
@@ -13,7 +13,7 @@
       ref="inputEl"
       type="text"
       inputmode="numeric"
-      class="cron-number-spinner__input"
+      class="cron-selector__spinner-input"
       :value="modelValue"
       :disabled="disabled"
       @focus="onFocus"
@@ -24,7 +24,7 @@
     />
     <button
       type="button"
-      class="cron-number-spinner__btn"
+      class="cron-selector__spinner-btn"
       :disabled="disabled || modelValue >= max"
       tabindex="-1"
       @click="increment"

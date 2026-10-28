@@ -15,6 +15,25 @@ body {
   padding: 2rem;
 }
 
+html.dark {
+  color-scheme: dark;
+
+  body {
+    background: #0a0a0a;
+    color: #e5eaf3;
+  }
+}
+
+html.dark .demo__header p,
+html.dark .demo__value {
+  color: #a3a6ad;
+}
+
+html.dark .demo__value code {
+  background: #414243;
+  color: #e5eaf3;
+}
+
 .demo {
   max-width: 800px;
   margin: 0 auto;

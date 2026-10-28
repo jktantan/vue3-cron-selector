@@ -1,5 +1,5 @@
 <template>
-  <span class="cron-icon" aria-hidden="true">
+  <span class="cron-selector__icon" aria-hidden="true">
     <svg
       viewBox="0 0 16 16"
       fill="none"

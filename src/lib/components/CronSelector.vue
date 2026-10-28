@@ -1,5 +1,9 @@
 <template>
-  <div class="cron-selector" :class="{ 'cron-selector--disabled': disabled }">
+  <div
+    class="cron-selector"
+    :class="[themeClass, { 'cron-selector--disabled': disabled }]"
+    :style="themeStyle"
+  >
     <CronPopover
       v-if="mode === 'popover'"
       :model-value="cronString"
@@ -40,11 +44,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, provide } from 'vue'
 import type { CronFormat, DisplayMode } from '../core/types'
 import type { LocaleDefinition } from '../locale/types'
 import { useCron } from '../composables/useCron'
 import { resolveLocale } from '../locale/engine'
+import {
+  CronThemeKey,
+  CronThemeStyleKey,
+  type CronTheme,
+  type CronThemeStyle,
+  type ResolvedCronTheme,
+} from '../theme/context'
 import CronTabbedPanel from './CronTabbedPanel.vue'
 import CronPopover from './CronPopover.vue'
 
@@ -57,6 +68,8 @@ const props = withDefaults(
     cols?: Partial<Record<string, number>>
     previewCount?: number
     mode?: DisplayMode
+    theme?: CronTheme
+    primaryColor?: string
   }>(),
   {
     modelValue: '',
@@ -66,6 +79,8 @@ const props = withDefaults(
     cols: () => ({}),
     previewCount: 5,
     mode: 'inline',
+    theme: 'auto',
+    primaryColor: '',
   },
 )
 
@@ -110,6 +125,41 @@ const resolvedLocale = computed<LocaleDefinition>(() => {
   const loc = localeRefValue.value
   return typeof loc === 'string' ? resolveLocale(loc) : loc
 })
+
+// `auto` keeps the component on the inherited Element Plus theme (the `html.dark`
+// convention); explicit values pin the palette for this instance. The resolved
+// value is also provided to teleported panels (popover, inline-select dropdown),
+// which sit outside this subtree in the DOM.
+const resolvedTheme = computed<ResolvedCronTheme>(() =>
+  props.theme === 'auto' ? null : props.theme,
+)
+const themeClass = computed(() =>
+  resolvedTheme.value ? `cron-selector--${resolvedTheme.value}` : '',
+)
+provide(CronThemeKey, resolvedTheme)
+
+// A custom primary colour is expanded into the four primary tokens the
+// stylesheet consumes. Mixing against `--cron-color-bg` keeps the derived
+// shades readable in both light and dark palettes: on a light background the
+// tints move towards white, on a dark background towards the dark surface.
+const EMPTY_THEME_STYLE: CronThemeStyle = {}
+
+const themeStyle = computed<CronThemeStyle>(() => {
+  const primary = props.primaryColor.trim()
+  if (!primary) return EMPTY_THEME_STYLE
+  return {
+    '--cron-color-primary': primary,
+    '--cron-color-primary-hover': `color-mix(in srgb, ${primary} 70%, var(--cron-color-bg, #ffffff))`,
+    '--cron-color-primary-light': `color-mix(in srgb, ${primary} 10%, var(--cron-color-bg, #ffffff))`,
+    '--cron-color-primary-border': `color-mix(in srgb, ${primary} 50%, var(--cron-color-bg, #ffffff))`,
+    // Secondary surfaces derived from the primary colour. Without these the
+    // selected row / dropdown option would keep Element Plus' default blue tint
+    // (a near-black blue in dark mode) while the border turned green.
+    '--cron-color-bg-selected': `color-mix(in srgb, ${primary} 10%, var(--cron-color-bg, #ffffff))`,
+    '--cron-color-border-focus': primary,
+  }
+})
+provide(CronThemeStyleKey, themeStyle)
 
 watch(
   () => props.modelValue,

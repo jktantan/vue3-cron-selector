@@ -1,0 +1,107 @@
+// Internal design tokens for vue3-cron-selector.
+//
+// Every token maps to an Element Plus (`--el-*`) variable when one exists, with
+// a literal fallback that matches Element Plus' own default. This means the
+// component automatically follows an application's Element Plus theme (for
+// example a customized `--el-color-primary`), while still rendering correctly
+// when Element Plus is not installed at all.
+//
+// This partial emits no CSS on its own; variables.scss expands the mixins into
+// the `:root` / `html.dark` / modifier blocks.
+
+@mixin cron-shared-tokens {
+  --cron-font-family: var(
+    --el-font-family,
+    'Helvetica Neue',
+    Helvetica,
+    'PingFang SC',
+    'Hiragino Sans GB',
+    'Microsoft YaHei',
+    '微软雅黑',
+    Arial,
+    sans-serif
+  );
+  --cron-font-size-sm: var(--el-font-size-small, 13px);
+  --cron-font-size-base: var(--el-font-size-base, 14px);
+  --cron-font-size-lg: var(--el-font-size-medium, 16px);
+  --cron-line-height: 1.5;
+
+  --cron-spacing-xs: 4px;
+  --cron-spacing-sm: 8px;
+  --cron-spacing-md: 12px;
+  --cron-spacing-lg: 16px;
+  --cron-spacing-xl: 24px;
+
+  --cron-border-radius: var(--el-border-radius-base, 4px);
+  --cron-border-radius-lg: var(--el-border-radius-base, 4px);
+  --cron-border-width: 1px;
+
+  --cron-control-height: var(--el-component-size, 32px);
+  --cron-grid-cell-height: 28px;
+
+  --cron-transition-duration: var(--el-transition-duration, 0.3s);
+  --cron-transition-easing: var(
+    --el-transition-function-ease-in-out-bezier,
+    cubic-bezier(0.645, 0.045, 0.355, 1)
+  );
+
+  --cron-panel-max-height: 500px;
+  --cron-popover-max-width: 680px;
+  --cron-popover-z-index: 2000;
+  --cron-body-min-height: 288px;
+  --cron-tab-height: var(--el-component-size-large, 40px);
+}
+
+@mixin cron-light-tokens {
+  @include cron-shared-tokens;
+
+  --cron-color-primary: var(--el-color-primary, #409eff);
+  --cron-color-primary-hover: var(--el-color-primary-light-3, #79bbff);
+  --cron-color-primary-light: var(--el-color-primary-light-9, #ecf5ff);
+  --cron-color-primary-border: var(--el-color-primary-light-5, #a0cfff);
+  --cron-color-text: var(--el-text-color-primary, #303133);
+  --cron-color-text-regular: var(--el-text-color-regular, #606266);
+  --cron-color-text-secondary: var(--el-text-color-secondary, #909399);
+  --cron-color-text-placeholder: var(--el-text-color-placeholder, #a8abb2);
+  --cron-color-border: var(--el-border-color, #dcdfe6);
+  --cron-color-border-light: var(--el-border-color-light, #e4e7ed);
+  --cron-color-border-lighter: var(--el-border-color-lighter, #ebeef5);
+  --cron-color-border-focus: var(--cron-color-primary);
+  --cron-color-bg: var(--el-bg-color-overlay, #ffffff);
+  --cron-color-bg-hover: var(--el-fill-color-light, #f5f7fa);
+  --cron-color-bg-selected: var(--cron-color-primary-light);
+  --cron-color-fill: var(--el-fill-color-light, #f5f7fa);
+  --cron-color-error: var(--el-color-danger, #f56c6c);
+  --cron-color-error-light: var(--el-color-danger-light-9, #fef0f0);
+
+  --cron-shadow-sm: var(--el-box-shadow-lighter, 0 0 4px rgb(0 0 0 / 6%));
+  --cron-shadow-md: var(--el-box-shadow-light, 0 0 12px rgb(0 0 0 / 12%));
+  --cron-shadow-lg: var(--el-box-shadow-light, 0 0 12px rgb(0 0 0 / 12%));
+}
+
+@mixin cron-dark-tokens {
+  @include cron-shared-tokens;
+
+  --cron-color-primary: var(--el-color-primary, #409eff);
+  --cron-color-primary-hover: var(--el-color-primary-light-3, #3375b9);
+  --cron-color-primary-light: var(--el-color-primary-light-9, #18222c);
+  --cron-color-primary-border: var(--el-color-primary-light-5, #2a598a);
+  --cron-color-text: var(--el-text-color-primary, #e5eaf3);
+  --cron-color-text-regular: var(--el-text-color-regular, #cfd3dc);
+  --cron-color-text-secondary: var(--el-text-color-secondary, #a3a6ad);
+  --cron-color-text-placeholder: var(--el-text-color-placeholder, #8d9095);
+  --cron-color-border: var(--el-border-color, #4c4d4f);
+  --cron-color-border-light: var(--el-border-color-light, #414243);
+  --cron-color-border-lighter: var(--el-border-color-lighter, #363637);
+  --cron-color-border-focus: var(--cron-color-primary);
+  --cron-color-bg: var(--el-bg-color-overlay, #1d1e1f);
+  --cron-color-bg-hover: var(--el-fill-color-light, #262727);
+  --cron-color-bg-selected: var(--cron-color-primary-light);
+  --cron-color-fill: var(--el-fill-color-light, #262727);
+  --cron-color-error: var(--el-color-danger, #f56c6c);
+  --cron-color-error-light: var(--el-color-danger-light-9, #2b1d1d);
+
+  --cron-shadow-sm: var(--el-box-shadow-lighter, 0 0 4px rgb(0 0 0 / 72%));
+  --cron-shadow-md: var(--el-box-shadow-light, 0 0 12px rgb(0 0 0 / 72%));
+  --cron-shadow-lg: var(--el-box-shadow-light, 0 0 12px rgb(0 0 0 / 72%));
+}

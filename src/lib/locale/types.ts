@@ -27,6 +27,12 @@ export interface LocaleDefinition {
     readonly cronExpression: string
     readonly placeholder: string
     readonly everyDay: string
+    /**
+     * Step row template. Tokens: `{step}` and `{base}` are the two spinners,
+     * `{unit}` is the field label. Optional so existing custom locales keep
+     * working; components fall back to `{step} {unit} {startingAt} {base}`.
+     */
+    readonly stepWithBase?: string
     readonly everyNDaysStartingAt: string
     readonly specificDayOfWeek: string
     readonly specificDayOfMonth: string
