@@ -228,4 +228,47 @@ describe('CronSelector', () => {
       ).toBeUndefined()
     }
   })
+
+  it('renders the English step row in natural word order', () => {
+    const wrapper = mount(CronSelector, {
+      props: { modelValue: '*/5 * * * *', locale: 'en' },
+    })
+    const text = wrapper.find('.cron-selector__options').text()
+    expect(text).toContain('Minute(s), starting at')
+    expect(text).not.toContain('MinuteFrom')
+    expect(text).not.toContain('Minutestarting')
+  })
+
+  it('renders the Chinese step row in natural word order', () => {
+    const wrapper = mount(CronSelector, {
+      props: { modelValue: '*/5 * * * *', locale: 'zh' },
+    })
+    const text = wrapper.find('.cron-selector__options').text()
+    expect(text).toContain('分钟，从第')
+    expect(text).toContain('分钟开始')
+    expect(text).not.toContain('分钟从')
+  })
+
+  it('keeps every placeholder inside the day option copy', async () => {
+    const wrapper = mount(CronSelector, {
+      props: { format: 'quartz', locale: 'en' },
+    })
+    await wrapper.findAll('.cron-selector__tab')[3].trigger('click')
+
+    const optionText = wrapper.findAll('.cron-selector__option').map((option) =>
+      option
+        .findAll('.cron-selector__option-text')
+        .map((span) => span.text())
+        .join(' '),
+    )
+
+    // Before the template refactor these labels lost the text that followed
+    // the removed placeholder (e.g. "On the last [weekday] of the month"
+    // rendered with the weekday at the end and no "of the month").
+    expect(optionText).toContain('Every day(s) starting at the of the month')
+    expect(optionText).toContain('On the last of the month')
+    expect(optionText).toContain('day(s) before the end of the month')
+    expect(optionText).toContain('Nearest weekday to the of the month')
+    expect(optionText).toContain('On the of the month')
+  })
 })

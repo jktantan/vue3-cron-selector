@@ -75,6 +75,7 @@ export const EN_LOCALE: LocaleDefinition = {
     cronExpression: 'Cron Expression',
     placeholder: 'Enter cron expression...',
     everyDay: 'Every day',
+    stepWithBase: '{step} {unit}(s), starting at {base}',
     everyNDaysStartingAt: 'Every {step} day(s) starting at the {start} of the month',
     specificDayOfWeek: 'Specific day of week',
     specificDayOfMonth: 'Specific day of month',
